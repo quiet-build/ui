@@ -22,15 +22,15 @@ describe('theme.css', () => {
   })
 
   it('defines every required token in :root', () => {
-    const root = css.slice(css.indexOf(':root'), css.indexOf('.dark'))
+    const root = css.slice(css.indexOf(':root'), css.search(/\n\.dark\s*\{/))
     for (const token of REQUIRED_TOKENS) {
       expect(root, `:root missing ${token}`).toContain(`${token}:`)
     }
   })
 
   it('overrides the key color tokens for dark mode', () => {
-    const dark = css.slice(css.indexOf('.dark'))
-    for (const token of ['--background', '--foreground', '--primary', '--border']) {
+    const dark = css.slice(css.search(/\n\.dark\s*\{/))
+    for (const token of ['--background', '--foreground', '--primary', '--border', '--muted', '--accent', '--ring']) {
       expect(dark, `.dark missing ${token}`).toContain(`${token}:`)
     }
   })
@@ -40,7 +40,7 @@ describe('theme.css', () => {
     expect(css).toContain('--color-primary: var(--primary)')
   })
 
-  it('declares selector-based dark mode and 4px radius', () => {
+  it('declares selector-based dark mode and 0.25rem (4px) radius', () => {
     expect(css).toContain('@custom-variant dark')
     expect(css).toContain('--radius: 0.25rem')
   })
