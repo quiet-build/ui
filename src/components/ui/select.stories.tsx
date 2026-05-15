@@ -1,0 +1,70 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from './select'
+
+const meta: Meta = {
+  title: 'UI/Select',
+  tags: ['autodocs'],
+}
+export default meta
+type Story = StoryObj
+
+export const Default: Story = {
+  render: () => (
+    <div className="w-48">
+      <Select defaultOpen>
+        <SelectTrigger>
+          <SelectValue placeholder="Format" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="pdf">PDF</SelectItem>
+          <SelectItem value="png">PNG</SelectItem>
+          <SelectItem value="jpeg">JPEG</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+}
+
+export const Closed: Story = {
+  render: () => (
+    <div className="w-48">
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Format" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="pdf">PDF</SelectItem>
+          <SelectItem value="png">PNG</SelectItem>
+          <SelectItem value="jpeg">JPEG</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+}
+
+export const WithGroup: Story = {
+  render: () => (
+    <div className="w-48">
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Format" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Image formats</SelectLabel>
+            <SelectItem value="png">PNG</SelectItem>
+            <SelectItem value="jpeg">JPEG</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+}
