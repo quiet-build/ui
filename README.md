@@ -5,6 +5,7 @@ system. Warm paper surfaces, Lora serif headings over Inter body text, crisp 4px
 corners, a single Forest-green accent, light + dark.
 
 📘 **[Live Storybook → quietbuildlab.github.io/ui](https://quietbuildlab.github.io/ui/)**
+🤖 **AI-friendly:** [`llms.txt`](https://quietbuildlab.github.io/ui/llms.txt) · [`llms-full.txt`](https://quietbuildlab.github.io/ui/llms-full.txt) · [`AGENTS.md`](./AGENTS.md)
 
 ## Install
 

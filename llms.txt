@@ -1,0 +1,67 @@
+# @quietbuildlab/ui
+
+> Themed shadcn/ui component library — the "Manuscript" design system. Warm paper light + warm-charcoal dark, Forest accent, Lora serif over Inter sans, 4px radius. One npm package, one canonical theme; every quietbuildlab app inherits the same look. Re-themable per app via CSS variable overrides.
+
+## Install
+
+`npm install @quietbuildlab/ui` — requires Tailwind CSS v4 and React 18 or 19.
+
+In the consumer app's main CSS:
+
+```
+@import "tailwindcss";
+@import "@quietbuildlab/ui/theme.css";
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+Toggle dark mode by setting a `.dark` class on `<html>`.
+
+## Components
+
+All exported as named imports from the package root (`import { Button } from '@quietbuildlab/ui'`).
+
+- **Button** — variants: default, secondary, outline, ghost, destructive, link. Sizes: default, sm, lg, icon. Supports `asChild` (Radix Slot).
+- **Badge** — variants: default, secondary, destructive, outline.
+- **Input** — text input. Standard `<input>` props.
+- **Textarea** — multi-line input.
+- **Label** — `<label>` wrapper; pair with `htmlFor`.
+- **Card** + **CardHeader**, **CardTitle**, **CardDescription**, **CardContent**, **CardFooter**, **CardAction** — surface container.
+- **Dialog** + **DialogTrigger**, **DialogContent**, **DialogHeader**, **DialogTitle**, **DialogDescription**, **DialogFooter**, **DialogClose** — modal. Portals to document.body.
+- **DropdownMenu** + **Trigger**, **Content**, **Item**, **Separator**, **Label** — menu. Portals.
+- **Tooltip** + **Trigger**, **Content**, **Provider** — needs an ancestor `<TooltipProvider>`.
+- **Select** + **Trigger**, **Value**, **Content**, **Item**, **Group**, **Label** — combobox. Portals.
+- **Checkbox**, **Switch**, **RadioGroup** + **RadioGroupItem** — controlled or uncontrolled.
+- **Tabs** + **TabsList**, **TabsTrigger**, **TabsContent**.
+- **Separator** — orientation: horizontal (default) | vertical.
+- **Skeleton** — loading placeholder; size via `className`.
+- **Progress** — `value` 0–100.
+- **Toaster** — mount once at app root; trigger toasts via `import { toast } from 'sonner'`. Note: uses `next-themes` for color-mode detection — without a `<ThemeProvider>` it falls back to OS `prefers-color-scheme`.
+- **Table** + **TableHeader**, **TableBody**, **TableFooter**, **TableHead**, **TableRow**, **TableCell**, **TableCaption** — primitive. Style only.
+- **Pagination** + **Content**, **Item**, **Link**, **Previous**, **Next**, **Ellipsis** — UI primitive for numbered pagination.
+- **DataTable** — TanStack-powered. Both client-side (default) and server-side (presence of `pageCount`) pagination. Built-in rows-per-page selector + `loading` prop.
+
+## Theming
+
+Override CSS variables AFTER the theme.css import — every component picks up the cascade:
+
+```css
+:root {
+  --primary: oklch(0.40 0.10 250);   /* deep blue accent */
+  --ring: oklch(0.40 0.10 250);
+  --radius: 0.5rem;                   /* softer corners */
+}
+.dark {
+  --primary: oklch(0.65 0.10 250);
+  --ring: oklch(0.65 0.10 250);
+}
+```
+
+Token groups: surfaces (`background`, `foreground`, `card`, `popover`), accent (`primary`, `ring`), quiet UI (`secondary`, `muted`, `accent`), form (`border`, `input`), status (`destructive`), shape (`radius`), type (`font-sans`, `font-serif`), plus `chart-1..5` and `sidebar-*`.
+
+## More
+
+- [Live Storybook](https://quietbuildlab.github.io/ui/) — every component with controls
+- [llms-full.txt](https://quietbuildlab.github.io/ui/llms-full.txt) — full API + composition rules + gotchas
+- [AGENTS.md](https://github.com/quietbuildlab/ui/blob/main/AGENTS.md) — usage contract for AI agents
+- [THEMING.md](https://github.com/quietbuildlab/ui/blob/main/THEMING.md) — full token table + worked examples
+- [GitHub repo](https://github.com/quietbuildlab/ui)
