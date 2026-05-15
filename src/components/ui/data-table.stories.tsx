@@ -53,27 +53,37 @@ export const Empty: Story = {
 }
 
 function ServerSideExample() {
-  const PAGE_SIZE = 10
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: PAGE_SIZE })
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
+  const [isLoading, setIsLoading] = useState(false)
+  const [pageRows, setPageRows] = useState<Invoice[]>(() => ROWS.slice(0, 10))
 
-  // Simulate "fetching" the right slice from a server.
-  const start = pagination.pageIndex * PAGE_SIZE
-  const pageRows = ROWS.slice(start, start + PAGE_SIZE)
-  const pageCount = Math.ceil(ROWS.length / PAGE_SIZE)
+  const pageCount = Math.ceil(ROWS.length / pagination.pageSize)
+
+  const handlePaginationChange = (next: PaginationState) => {
+    setPagination(next)
+    setIsLoading(true)
+    // Simulate a server fetch.
+    setTimeout(() => {
+      const start = next.pageIndex * next.pageSize
+      setPageRows(ROWS.slice(start, start + next.pageSize))
+      setIsLoading(false)
+    }, 700)
+  }
 
   return (
     <div className="w-[600px]">
       <p className="text-muted-foreground mb-3 text-sm">
-        Server-side mode: parent owns <code>pageIndex</code> + <code>pageCount</code>; the table calls
-        <code> onPaginationChange</code> instead of slicing.
+        Server-side mode: parent owns pagination state, simulates a 700ms fetch on every change,
+        and passes <code>loading</code> so the table dims and disables controls during the fetch.
       </p>
       <DataTable
         columns={columns}
         data={pageRows}
-        pageSize={PAGE_SIZE}
         pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
         pageCount={pageCount}
-        onPaginationChange={setPagination}
+        onPaginationChange={handlePaginationChange}
+        loading={isLoading}
       />
     </div>
   )
@@ -81,4 +91,19 @@ function ServerSideExample() {
 
 export const ServerSide: Story = {
   render: () => <ServerSideExample />,
+}
+
+export const Loading: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <DataTable
+        columns={columns}
+        data={ROWS.slice(0, 10)}
+        pageIndex={0}
+        pageCount={5}
+        pageSize={10}
+        loading
+      />
+    </div>
+  ),
 }

@@ -1,6 +1,6 @@
 {
   "name": "@quietbuildlab/ui",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Shared UI component library — the Manuscript design system.",
   "license": "MIT",
   "type": "module",

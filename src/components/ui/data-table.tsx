@@ -10,6 +10,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { Loader2 } from 'lucide-react'
 
 import { cn } from '#lib/utils'
 import {
@@ -21,6 +22,15 @@ import {
   TableRow,
 } from '#components/ui/table'
 import { Button } from '#components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#components/ui/select'
+
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
 export interface DataTableProps<TData, TValue> {
   /** Column definitions in TanStack Table format. */
@@ -31,21 +41,25 @@ export interface DataTableProps<TData, TValue> {
    * - Server-side mode: pass only the current page's rows.
    */
   data: TData[]
-  /** Rows per page. Defaults to 10. */
+  /** Initial (client-side) or controlled (server-side) page size. Default 10. */
   pageSize?: number
-  /**
-   * Controlled current page index (0-based). Pass alongside `pageCount` and
-   * `onPaginationChange` for server-side pagination.
-   */
+  /** Options for the rows-per-page selector. Default [10, 25, 50, 100]. */
+  pageSizeOptions?: number[]
+  /** Controlled page index. Required for server-side mode. */
   pageIndex?: number
   /**
    * Total page count. **Presence of this prop flips the table into
-   * server-side mode** — the parent is responsible for fetching the right
-   * slice of data when `onPaginationChange` fires.
+   * server-side mode** — the parent owns pagination state and is responsible
+   * for fetching the right slice of data when `onPaginationChange` fires.
    */
   pageCount?: number
-  /** Fires whenever the user navigates pages (or page size changes). */
+  /** Fires whenever pagination state changes (page or size). */
   onPaginationChange?: (state: PaginationState) => void
+  /**
+   * Show a loading indicator and disable controls. For server-side mode,
+   * set true while the parent is fetching the next page.
+   */
+  loading?: boolean
   /** Empty-state cell content. Defaults to "No results.". */
   emptyMessage?: React.ReactNode
   /** Optional class for the outer wrapper. */
@@ -56,27 +70,28 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize = 10,
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   pageIndex,
   pageCount,
   onPaginationChange,
+  loading = false,
   emptyMessage = 'No results.',
   className,
 }: DataTableProps<TData, TValue>) {
   const isServerSide = pageCount !== undefined
-  const isControlled = pageIndex !== undefined
 
   const [internalPagination, setInternalPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize,
   })
 
-  const pagination: PaginationState = isControlled
-    ? { pageIndex, pageSize }
+  const pagination: PaginationState = isServerSide
+    ? { pageIndex: pageIndex ?? 0, pageSize }
     : internalPagination
 
   const handlePaginationChange: OnChangeFn<PaginationState> = (updater) => {
     const next = typeof updater === 'function' ? updater(pagination) : updater
-    if (!isControlled) {
+    if (!isServerSide) {
       setInternalPagination(next)
     }
     onPaginationChange?.(next)
@@ -87,7 +102,10 @@ export function DataTable<TData, TValue>({
     columns,
     state: { pagination },
     onPaginationChange: handlePaginationChange,
-    ...(isServerSide ? { pageCount, manualPagination: true } : { getPaginationRowModel: getPaginationRowModel() }),
+    manualPagination: isServerSide,
+    ...(isServerSide
+      ? { pageCount }
+      : { getPaginationRowModel: getPaginationRowModel() }),
     getCoreRowModel: getCoreRowModel(),
   })
 
@@ -96,7 +114,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className={cn('space-y-3', className)}>
       <div className="rounded-md border">
-        <Table>
+        <Table className={cn('transition-opacity', loading && 'opacity-60')}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -135,27 +153,54 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-muted-foreground text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of {totalPages}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-sm">Rows per page</span>
+          <Select
+            value={String(pagination.pageSize)}
+            onValueChange={(value) => table.setPageSize(Number(value))}
+            disabled={loading}
+          >
+            <SelectTrigger className="h-8 w-[80px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizeOptions.map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+
+        <div className="flex items-center gap-3">
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            {loading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" />
+            ) : null}
+            <span>
+              Page {pagination.pageIndex + 1} of {totalPages}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={loading || !table.getCanPreviousPage()}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={loading || !table.getCanNextPage()}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, screen } from '@testing-library/react'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -102,5 +102,84 @@ describe('DataTable server-side pagination', () => {
     expect(getByText('Row 1')).toBeInTheDocument()
     expect(getByText('Row 10')).toBeInTheDocument()
     expect(queryByText('Row 11')).not.toBeInTheDocument()
+  })
+})
+
+describe('DataTable rows-per-page selector', () => {
+  it('changes page size client-side', async () => {
+    const { container } = render(<DataTable columns={columns} data={rows} pageSize={10} />)
+    // 10 rows visible initially
+    expect(container.querySelectorAll('tbody tr').length).toBe(10)
+    // Open the rows-per-page selector and choose 25.
+    // Radix Select opens on keyDown Space/Enter; listbox renders into a portal.
+    const trigger = screen.getByRole('combobox')
+    fireEvent.keyDown(trigger, { key: 'Enter' })
+    const option25 = await screen.findByRole('option', { name: '25' })
+    fireEvent.click(option25)
+    expect(container.querySelectorAll('tbody tr').length).toBe(25)
+  })
+
+  it('respects custom pageSizeOptions', async () => {
+    render(<DataTable columns={columns} data={rows} pageSize={5} pageSizeOptions={[5, 15]} />)
+    const trigger = screen.getByRole('combobox')
+    fireEvent.keyDown(trigger, { key: 'Enter' })
+    expect(await screen.findByRole('option', { name: '5' })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: '15' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: '10' })).not.toBeInTheDocument()
+  })
+
+  it('fires onPaginationChange with new pageSize in server-side mode', async () => {
+    const fn = vi.fn()
+    render(
+      <DataTable
+        columns={columns}
+        data={rows.slice(0, 10)}
+        pageIndex={0}
+        pageCount={5}
+        pageSize={10}
+        onPaginationChange={fn}
+      />,
+    )
+    const trigger = screen.getByRole('combobox')
+    fireEvent.keyDown(trigger, { key: 'Enter' })
+    fireEvent.click(await screen.findByRole('option', { name: '25' }))
+    expect(fn).toHaveBeenCalled()
+    const lastCall = fn.mock.calls[fn.mock.calls.length - 1][0]
+    expect(lastCall.pageSize).toBe(25)
+  })
+})
+
+describe('DataTable loading state', () => {
+  it('shows a loading indicator with aria-label when loading', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={rows.slice(0, 10)}
+        pageIndex={0}
+        pageCount={5}
+        loading
+      />,
+    )
+    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
+  })
+
+  it('disables Prev, Next, and the rows-per-page selector when loading', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={rows.slice(10, 20)}
+        pageIndex={1}
+        pageCount={5}
+        loading
+      />,
+    )
+    expect(screen.getByRole('button', { name: /previous/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+    expect(screen.getByRole('combobox')).toBeDisabled()
+  })
+
+  it('does not show the indicator when loading is false', () => {
+    render(<DataTable columns={columns} data={rows} />)
+    expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
   })
 })
