@@ -66,6 +66,50 @@ export interface DataTableProps<TData, TValue> {
   className?: string
 }
 
+/**
+ * TanStack Table-powered data table with built-in Prev/Next, rows-per-page
+ * selector, empty state, and loading state.
+ *
+ * **Two pagination modes** — the presence of `pageCount` flips the mode:
+ *
+ * - **Client-side (default):** pass the full dataset; the table paginates
+ *   internally over the `data` array.
+ * - **Server-side:** pass `pageCount` (and typically controlled `pageIndex`).
+ *   The parent owns pagination state, fetches the right slice when
+ *   `onPaginationChange` fires, and passes `loading` so the table dims and
+ *   disables controls during the fetch.
+ *
+ * `columns` uses TanStack's `ColumnDef<TData>[]` type — import it from
+ * `@tanstack/react-table` (a transitive dep of this package).
+ *
+ * @example Client-side
+ * <DataTable columns={columns} data={allRows} pageSize={10} />
+ *
+ * @example Server-side with loading
+ * const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
+ * const [isLoading, setIsLoading] = useState(false)
+ * const [pageRows, setPageRows] = useState<Row[]>([])
+ * const [pageCount, setPageCount] = useState(0)
+ *
+ * async function handlePagination(next: PaginationState) {
+ *   setPagination(next)
+ *   setIsLoading(true)
+ *   const res = await fetchPage(next.pageIndex, next.pageSize)
+ *   setPageRows(res.rows)
+ *   setPageCount(res.pageCount)
+ *   setIsLoading(false)
+ * }
+ *
+ * <DataTable
+ *   columns={columns}
+ *   data={pageRows}
+ *   pageIndex={pagination.pageIndex}
+ *   pageSize={pagination.pageSize}
+ *   pageCount={pageCount}
+ *   onPaginationChange={handlePagination}
+ *   loading={isLoading}
+ * />
+ */
 export function DataTable<TData, TValue>({
   columns,
   data,

@@ -38,6 +38,18 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * Themed action button. Variants: `default` | `secondary` | `outline` | `ghost`
+ * | `destructive` | `link`. Sizes: `default` | `sm` | `lg` | `icon`.
+ *
+ * Pass `asChild` (Radix Slot) to render as a different element while keeping
+ * the button styling — typically used to wrap a router link:
+ *
+ * @example
+ * <Button>Save</Button>
+ * <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+ * <Button asChild><Link to="/settings">Settings</Link></Button>
+ */
 function Button({
   className,
   variant = "default",

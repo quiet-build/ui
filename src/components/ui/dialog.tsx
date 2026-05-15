@@ -5,6 +5,32 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { cn } from "#lib/utils"
 import { Button } from "#components/ui/button"
 
+/**
+ * Modal dialog (Radix Dialog). Compose with `DialogTrigger`, `DialogContent`,
+ * `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter`, and
+ * `DialogClose`. Content portals to `document.body` — style via `className`
+ * on `DialogContent`.
+ *
+ * Always include a `DialogTitle` (or `aria-labelledby`) for screen readers.
+ * Use `<DialogClose asChild>` to wrap a Cancel button so clicking it closes
+ * the dialog.
+ *
+ * @example
+ * <Dialog>
+ *   <DialogTrigger asChild><Button>Open</Button></DialogTrigger>
+ *   <DialogContent>
+ *     <DialogHeader>
+ *       <DialogTitle>Rename file</DialogTitle>
+ *       <DialogDescription>Give it a clearer name.</DialogDescription>
+ *     </DialogHeader>
+ *     <Input defaultValue="invoice.pdf" />
+ *     <DialogFooter>
+ *       <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+ *       <Button onClick={save}>Save</Button>
+ *     </DialogFooter>
+ *   </DialogContent>
+ * </Dialog>
+ */
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {

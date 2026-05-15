@@ -2,6 +2,16 @@ import * as React from "react"
 
 import { cn } from "#lib/utils"
 
+/**
+ * Themed text input. Forwards all standard `<input>` props. Use `type` for
+ * `text` (default) | `email` | `password` | `number` | `search` | `url` etc.
+ * Pair with a `<Label htmlFor>` for accessibility. Use `aria-invalid` to
+ * surface validation errors via the destructive ring.
+ *
+ * @example
+ * <Input type="email" placeholder="you@example.com" />
+ * <Input aria-invalid={hasError || undefined} />
+ */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

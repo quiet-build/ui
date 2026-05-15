@@ -6,6 +6,23 @@ import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "#lib/utils"
 
+/**
+ * Themed select / combobox (Radix Select). Compose with `SelectTrigger`,
+ * `SelectValue`, `SelectContent`, `SelectItem`, `SelectGroup`, and `SelectLabel`.
+ * Content portals to `document.body`.
+ *
+ * Controlled via `value` + `onValueChange`, or uncontrolled via `defaultValue`.
+ * The trigger reports role `combobox` for tests/a11y.
+ *
+ * @example
+ * <Select value={value} onValueChange={setValue}>
+ *   <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
+ *   <SelectContent>
+ *     <SelectItem value="a">A</SelectItem>
+ *     <SelectItem value="b">B</SelectItem>
+ *   </SelectContent>
+ * </Select>
+ */
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {

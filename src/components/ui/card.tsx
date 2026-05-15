@@ -2,6 +2,22 @@ import * as React from "react"
 
 import { cn } from "#lib/utils"
 
+/**
+ * Surface container with subtle border and shadow. Compose with the related
+ * sub-components: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`,
+ * `CardFooter`, and (newer shadcn) `CardAction`. `Card` works alone as a styled
+ * div, but the sub-components must be inside a `Card`.
+ *
+ * @example
+ * <Card>
+ *   <CardHeader>
+ *     <CardTitle>Recent files</CardTitle>
+ *     <CardDescription>Last opened just now</CardDescription>
+ *   </CardHeader>
+ *   <CardContent>3 files</CardContent>
+ *   <CardFooter><Button>Open</Button></CardFooter>
+ * </Card>
+ */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
