@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "vite --config preview/vite.config.ts",
     "preview:build": "vite build --config preview/vite.config.ts",
-    "build": "tsup",
+    "build": "tsup && cp src/theme.css dist/theme.css && node scripts/check-dist.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

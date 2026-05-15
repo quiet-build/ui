@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
