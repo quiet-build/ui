@@ -4,6 +4,8 @@ The shared UI component library for quietbuildlab apps — the **Manuscript** de
 system. Warm paper surfaces, Lora serif headings over Inter body text, crisp 4px
 corners, a single Forest-green accent, light + dark.
 
+📘 **[Live Storybook → quietbuildlab.github.io/ui](https://quietbuildlab.github.io/ui/)**
+
 ## Install
 
 ```

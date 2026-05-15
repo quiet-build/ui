@@ -9,6 +9,11 @@ const config: StorybookConfig = {
     options: {},
   },
   viteFinal: async (cfg) => {
+    // Set the public base path when building for GitHub Pages (project sites
+    // serve from /<repo>/). The CI workflow sets STORYBOOK_BASE_PATH=/ui/.
+    if (process.env.STORYBOOK_BASE_PATH) {
+      cfg.base = process.env.STORYBOOK_BASE_PATH
+    }
     cfg.plugins = [...(cfg.plugins ?? []), tailwindcss()]
     return cfg
   },
