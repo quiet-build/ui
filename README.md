@@ -41,6 +41,21 @@ document.documentElement.classList.toggle("dark", isDark);
 Button, Input, Textarea, Label, Card, Badge, Dialog, DropdownMenu, Tooltip,
 Select, Checkbox, Switch, RadioGroup, Tabs, Separator, Skeleton, Progress, Toaster.
 
+## Theming
+
+Override any token in your app CSS after `@import "@quietbuildlab/ui/theme.css"`:
+
+```css
+:root {
+  --primary: oklch(0.40 0.10 250);   /* deep blue accent */
+  --radius: 0.5rem;                   /* softer corners */
+}
+```
+
+Every component re-themes automatically. See `THEMING.md` for the full token list
+and worked examples, or run `npm run storybook` and open the **Guides → Theming**
+story for a live control panel.
+
 ## Development
 
 ```
