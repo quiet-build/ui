@@ -5,7 +5,7 @@ import { Label } from './label'
 const meta: Meta<typeof Input> = {
   title: 'UI/Input',
   component: Input,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
   argTypes: {
     disabled: { control: 'boolean' },
     placeholder: { control: 'text' },

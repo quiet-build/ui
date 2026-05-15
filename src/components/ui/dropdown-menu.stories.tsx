@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +12,7 @@ import { Button } from './button'
 
 const meta: Meta = {
   title: 'UI/DropdownMenu',
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
 }
 export default meta
 type Story = StoryObj
@@ -50,4 +51,10 @@ export const WithTrigger: Story = {
       </DropdownMenuContent>
     </DropdownMenu>
   ),
+  play: async ({ canvas, userEvent, canvasElement }) => {
+    const trigger = canvas.getByRole('button', { name: /file actions/i })
+    await userEvent.click(trigger)
+    const { within } = await import('storybook/test')
+    await expect(await within(canvasElement.ownerDocument.body).findByRole('menu')).toBeVisible()
+  },
 }

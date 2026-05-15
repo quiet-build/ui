@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
 import {
   Dialog,
   DialogClose,
@@ -15,7 +16,7 @@ import { Label } from './label'
 
 const meta: Meta = {
   title: 'UI/Dialog',
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
 }
 export default meta
 type Story = StoryObj
@@ -70,4 +71,11 @@ export const WithTrigger: Story = {
       </DialogContent>
     </Dialog>
   ),
+  play: async ({ canvas, userEvent }) => {
+    const trigger = canvas.getByRole('button', { name: /open dialog/i })
+    await userEvent.click(trigger)
+    // Dialog content portals to document.body — query through canvasElement.ownerDocument
+    const { within } = await import('storybook/test')
+    await expect(await within(trigger.ownerDocument.body).findByRole('dialog')).toBeVisible()
+  },
 }

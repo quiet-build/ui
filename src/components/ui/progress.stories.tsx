@@ -4,7 +4,7 @@ import { Progress } from './progress'
 const meta: Meta<typeof Progress> = {
   title: 'UI/Progress',
   component: Progress,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
   argTypes: {
     value: {
       control: { type: 'number', min: 0, max: 100 },

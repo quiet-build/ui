@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
 import {
   Select,
   SelectContent,
@@ -11,7 +12,7 @@ import {
 
 const meta: Meta = {
   title: 'UI/Select',
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
 }
 export default meta
 type Story = StoryObj
@@ -48,6 +49,12 @@ export const Closed: Story = {
       </Select>
     </div>
   ),
+  play: async ({ canvas, userEvent, canvasElement }) => {
+    const trigger = canvas.getByRole('combobox')
+    await userEvent.click(trigger)
+    const { within } = await import('storybook/test')
+    await expect(await within(canvasElement.ownerDocument.body).findByRole('listbox')).toBeVisible()
+  },
 }
 
 export const WithGroup: Story = {

@@ -4,7 +4,7 @@ import { Separator } from './separator'
 const meta: Meta<typeof Separator> = {
   title: 'UI/Separator',
   component: Separator,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
 }
 
 export default meta

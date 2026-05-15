@@ -4,7 +4,7 @@ import { Textarea } from './textarea'
 const meta: Meta<typeof Textarea> = {
   title: 'UI/Textarea',
   component: Textarea,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
   argTypes: {
     disabled: { control: 'boolean' },
     placeholder: { control: 'text' },

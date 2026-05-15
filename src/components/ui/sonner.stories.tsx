@@ -5,7 +5,7 @@ import { Button } from './button'
 
 const meta: Meta = {
   title: 'UI/Toaster',
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
 }
 
 export default meta

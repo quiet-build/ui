@@ -4,7 +4,7 @@ import { Button } from './button'
 
 const meta: Meta = {
   title: 'UI/Tooltip',
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
 }
 export default meta
 type Story = StoryObj

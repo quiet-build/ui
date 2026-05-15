@@ -85,7 +85,7 @@ function ThemingDemo({ primary, ring, radius, fontSerif }: Args) {
 const meta: Meta<typeof ThemingDemo> = {
   title: 'Guides/Theming',
   component: ThemingDemo,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ai-generated'],
   parameters: {
     docs: {
       description: {
