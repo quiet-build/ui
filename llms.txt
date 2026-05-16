@@ -28,6 +28,7 @@ All exported as named imports from the package root (`import { Button } from '@q
 - **Card** + **CardHeader**, **CardTitle**, **CardDescription**, **CardContent**, **CardFooter**, **CardAction** — surface container.
 - **Dialog** + **DialogTrigger**, **DialogContent**, **DialogHeader**, **DialogTitle**, **DialogDescription**, **DialogFooter**, **DialogClose** — modal. Portals to document.body.
 - **DropdownMenu** + **Trigger**, **Content**, **Item**, **Separator**, **Label** — menu. Portals.
+- **Popover** + **Trigger**, **Content**, **Anchor** — anchored non-modal overlay. Portals.
 - **Tooltip** + **Trigger**, **Content**, **Provider** — needs an ancestor `<TooltipProvider>`.
 - **Select** + **Trigger**, **Value**, **Content**, **Item**, **Group**, **Label** — combobox. Portals.
 - **Checkbox**, **Switch**, **RadioGroup** + **RadioGroupItem** — controlled or uncontrolled.
@@ -39,6 +40,9 @@ All exported as named imports from the package root (`import { Button } from '@q
 - **Table** + **TableHeader**, **TableBody**, **TableFooter**, **TableHead**, **TableRow**, **TableCell**, **TableCaption** — primitive. Style only.
 - **Pagination** + **Content**, **Item**, **Link**, **Previous**, **Next**, **Ellipsis** — UI primitive for numbered pagination.
 - **DataTable** — TanStack-powered. Both client-side (default) and server-side (presence of `pageCount`) pagination. Built-in rows-per-page selector + `loading` prop.
+- **FilePicker** + **FilePickerDropzone**, **FilePickerTrigger**, **FilePickerInput**, **FilePickerList**, **FilePickerItem**, **FilePickerClear** — compound file picker with click + drag-and-drop, controlled/uncontrolled, per-file preview/size/remove, `accept`/`maxSize`/`maxFiles` validation via `onError(reason, file?)`. Default layout renders dropzone + trigger + list if no children passed; pass children for full compound control. Also exports `formatBytes` helper and `FilePickerErrorReason` type.
+- **Calendar** — themed `react-day-picker` v10. Modes: `single` | `range` | `multiple`. Forwards all `DayPickerProps` including `numberOfMonths`, `disabled` matchers, `defaultMonth`. Override per-element classes via `classNames`. Use directly for inline calendars; wrap in `<Popover>` for custom date-range pickers.
+- **DatePicker** + **DatePickerTrigger**, **DatePickerContent** — single-date popover picker built on `Popover` + `Calendar`. Controlled (`value`/`onValueChange`) or uncontrolled (`defaultValue`). `minDate`/`maxDate` bounds, `locale` (Intl.DateTimeFormat default), custom `format` fn. No-children default renders trigger + content; pass `<DatePickerTrigger>` + `<DatePickerContent>` for compound control.
 
 ## Theming
 

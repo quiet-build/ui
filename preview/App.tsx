@@ -9,6 +9,9 @@ import {
   Checkbox, Switch, RadioGroup, RadioGroupItem,
   Tabs, TabsList, TabsTrigger, TabsContent,
   Separator, Skeleton, Progress, Toaster,
+  FilePicker,
+  DatePicker,
+  Popover, PopoverTrigger, PopoverContent,
 } from '../src/index'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -115,6 +118,26 @@ export function App() {
               <TooltipTrigger asChild><Button variant="ghost">Hover me</Button></TooltipTrigger>
               <TooltipContent>A helpful hint</TooltipContent>
             </Tooltip>
+          </Section>
+
+          <Section title="File picker">
+            <div className="w-full max-w-md">
+              <FilePicker accept="image/*" multiple onFilesChange={() => {}} />
+            </div>
+          </Section>
+
+          <Section title="Date picker">
+            <div className="flex items-start gap-3">
+              <DatePicker placeholder="Pick a date" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">Popover</Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56">
+                  <p className="text-sm">Anchored content goes here.</p>
+                </PopoverContent>
+              </Popover>
+            </div>
           </Section>
 
           <Section title="Layout & feedback">

@@ -1,6 +1,6 @@
 {
   "name": "@quietbuildlab/ui",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Shared UI component library — the Manuscript design system.",
   "license": "MIT",
   "homepage": "https://quietbuildlab.github.io/ui/",
@@ -50,6 +50,7 @@
     "lucide-react": "^1.14.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
+    "react-day-picker": "^10.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0"
   },

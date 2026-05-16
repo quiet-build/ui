@@ -41,9 +41,9 @@ document.documentElement.classList.toggle("dark", isDark);
 
 ## Components
 
-Button, Input, Textarea, Label, Card, Badge, Dialog, DropdownMenu, Tooltip,
+Button, Input, Textarea, Label, Card, Badge, Dialog, DropdownMenu, Popover, Tooltip,
 Select, Checkbox, Switch, RadioGroup, Tabs, Separator, Skeleton, Progress, Toaster,
-Table, Pagination, DataTable.
+Table, Pagination, DataTable, FilePicker, Calendar, DatePicker.
 
 ## Theming
 
