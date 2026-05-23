@@ -172,6 +172,27 @@ return (
 - **Don't expect SSR-specific hydration helpers** — components are client-side React; the `'use client'` directive is in the components for Next.js App Router compatibility.
 - **Tailwind utility overrides via `className` work via `tailwind-merge`** — `cn('px-2', 'px-4')` resolves to `px-4`. But for tokens, override the CSS variable instead of fighting class specificity.
 
+## Editing this library (contributors)
+
+If you're modifying source code in this repo (not just consuming the library in another project), one rule is load-bearing:
+
+**The per-component `.md` files in `src/components/ui/*.md` are part of the contract. They must stay in sync with the `.tsx` they sit beside.**
+
+Whenever a `.tsx` change touches anything a consumer would see — the prop shape, default values, sub-component exports, composition rules, accessibility requirements, or the canonical usage example — update the matching `.md` in the same commit. Treat the `.md` like a test that must be edited when behavior changes; don't ship the `.tsx` change without the doc change.
+
+Concretely, you must update the doc when you:
+- Add, remove, or rename an exported component, sub-component, or helper.
+- Add, remove, or rename a prop, or change a prop's type or default.
+- Change the required composition (e.g. a new compound child becomes required).
+- Change accessibility behavior, focus management, or required ARIA props.
+- Change how the component is themed (new CSS variable it reads, new `data-*` attribute).
+
+You don't need to touch the `.md` for purely internal refactors (renaming a local variable, restructuring the implementation, optimizing perf) that don't change the externally observable contract.
+
+When in doubt: if the change would surprise a consumer who only reads the doc, update the doc.
+
+After updating the `.md`, also check if `llms.txt`, `llms-full.txt`, or any Storybook story needs the same update — those are downstream summaries of the per-component docs.
+
 ## Where to look for more
 
 - Live Storybook: https://quiet-build.github.io/ui/
