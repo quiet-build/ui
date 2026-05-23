@@ -55,7 +55,9 @@ jobs:
 
       - run: npm run build
 
+      # Auth happens via Trusted Publishing (OIDC) — no NPM_TOKEN secret needed.
+      # Configure once at: npmjs.com → @quietbuildlab/ui → Settings → Trusted publishing.
+      # Provenance is automatic when publishing via OIDC, but pass --provenance
+      # explicitly so the intent is visible in the workflow.
       - name: Publish to npm
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

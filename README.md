@@ -130,9 +130,20 @@ with provenance.
 
 **One-time setup** (already done if the repo has a working release history):
 
-1. Create an npm **Automation token** at https://www.npmjs.com/settings/<your-account>/tokens (Automation tokens bypass OTP)
-2. Add it as a repository secret named `NPM_TOKEN`
-3. Confirm `@quietbuildlab` org membership on npm
+The workflow authenticates to npm via **Trusted Publishing** (OIDC) — no
+`NPM_TOKEN` secret needed. Configure it once at:
+
+1. **npmjs.com → `@quietbuildlab/ui` → Settings → Trusted publishing**
+2. Select publisher: **GitHub Actions**
+3. Fields:
+   - Organization or user: `quietbuildlab`
+   - Repository: `ui`
+   - Workflow filename: `publish-npm.yml`
+   - Environment: *(leave empty)*
+   - Allowed actions: `npm publish`
+4. Save
+
+You also need `@quietbuildlab` org membership on npm.
 
 To re-run a failed publish without re-tagging, trigger the workflow manually
 from the Actions tab (`Publish to npm → Run workflow`).
