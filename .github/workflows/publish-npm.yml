@@ -49,6 +49,11 @@ jobs:
 
       - run: npm ci
 
+      # vitest browser mode uses Playwright Chromium. The npm install does not
+      # download browser binaries; install them explicitly so npm test can run.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
       - run: npm run typecheck
 
       - run: npm test
