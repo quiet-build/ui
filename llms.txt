@@ -1,25 +1,55 @@
 # @quietbuildlab/ui
 
-> Themed shadcn/ui component library — the "Manuscript" design system. Warm paper light + warm-charcoal dark, Forest accent, Lora serif over Inter sans, 4px radius. One npm package, one canonical theme; every quietbuildlab app inherits the same look. Re-themable per app via CSS variable overrides.
+> Themed shadcn/ui component library. Six ready-made themes (Manuscript, Midnight, Slate, Sunset, Ocean, Mono) light + dark, 31 components on Radix UI + Tailwind v4. Pick a theme with one CSS import or switch at runtime via `data-theme`. Re-themable further via CSS variable overrides.
 
 ## Install
 
 `npm install @quietbuildlab/ui` — requires Tailwind CSS v4 and React 18 or 19.
 
-In the consumer app's main CSS:
+In the consumer app's main CSS, pick ONE setup:
 
 ```
+/* A) single preset */
+@import "tailwindcss";
+@import "@quietbuildlab/ui/themes/midnight.css";    /* manuscript | midnight | slate | sunset | ocean | mono */
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+```
+/* B) backward-compat (Manuscript only) */
 @import "tailwindcss";
 @import "@quietbuildlab/ui/theme.css";
 @source "../node_modules/@quietbuildlab/ui/dist";
 ```
 
-Toggle dark mode by setting a `.dark` class on `<html>`.
+```
+/* C) runtime switching */
+@import "tailwindcss";
+@import "@quietbuildlab/ui/themes.css";
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+For C, set `document.documentElement.dataset.theme = "ocean"` to change theme; default is Manuscript. Toggle a `.dark` class on `<html>` for dark mode in any mode.
+
+## Themes
+
+| Theme | Vibe | Accent | Radius | Type |
+|---|---|---|---|---|
+| Manuscript | Warm paper, editorial | Forest green | 4px | Lora + Inter |
+| Midnight | Cool, focused | Indigo | 6px | Inter |
+| Slate | Neutral, corporate | Slate-blue | 4px | Inter |
+| Sunset | Warm, friendly | Coral | 10px | Inter |
+| Ocean | Calm SaaS | Teal | 6px | Inter |
+| Mono | Brutalist B/W | Black/white | 0px | Inter + mono |
 
 ## Components
 
 All exported as named imports from the package root (`import { Button } from '@quietbuildlab/ui'`).
 
+- **Accordion** + **AccordionItem**, **AccordionTrigger**, **AccordionContent** — collapsible sections. `type="single" collapsible` or `type="multiple"`.
+- **Alert** + **AlertTitle**, **AlertDescription** — inline non-blocking status banner. Variants: default | destructive.
+- **AlertDialog** + **AlertDialogTrigger**, **AlertDialogContent**, **AlertDialogHeader**, **AlertDialogTitle**, **AlertDialogDescription**, **AlertDialogFooter**, **AlertDialogAction**, **AlertDialogCancel** — blocking yes/no confirmation modal. Use for destructive actions.
+- **Avatar** + **AvatarImage**, **AvatarFallback** — user image with text fallback. Size via `className` (`size-6`, `size-10`, etc.).
 - **Button** — variants: default, secondary, outline, ghost, destructive, link. Sizes: default, sm, lg, icon. Supports `asChild` (Radix Slot).
 - **Badge** — variants: default, secondary, destructive, outline.
 - **Input** — text input. Standard `<input>` props.
@@ -29,6 +59,8 @@ All exported as named imports from the package root (`import { Button } from '@q
 - **Dialog** + **DialogTrigger**, **DialogContent**, **DialogHeader**, **DialogTitle**, **DialogDescription**, **DialogFooter**, **DialogClose** — modal. Portals to document.body.
 - **DropdownMenu** + **Trigger**, **Content**, **Item**, **Separator**, **Label** — menu. Portals.
 - **Popover** + **Trigger**, **Content**, **Anchor** — anchored non-modal overlay. Portals.
+- **Sheet** + **SheetTrigger**, **SheetContent**, **SheetHeader**, **SheetTitle**, **SheetDescription**, **SheetFooter**, **SheetClose** — slide-in panel. `side` prop: top | right (default) | bottom | left.
+- **Slider** — range input. `defaultValue={[50]}` for single, `defaultValue={[20, 80]}` for range.
 - **Tooltip** + **Trigger**, **Content**, **Provider** — needs an ancestor `<TooltipProvider>`.
 - **Select** + **Trigger**, **Value**, **Content**, **Item**, **Group**, **Label** — combobox. Portals.
 - **Checkbox**, **Switch**, **RadioGroup** + **RadioGroupItem** — controlled or uncontrolled.
@@ -39,20 +71,20 @@ All exported as named imports from the package root (`import { Button } from '@q
 - **Toaster** — mount once at app root; trigger toasts via `import { toast } from 'sonner'`. Note: uses `next-themes` for color-mode detection — without a `<ThemeProvider>` it falls back to OS `prefers-color-scheme`.
 - **Table** + **TableHeader**, **TableBody**, **TableFooter**, **TableHead**, **TableRow**, **TableCell**, **TableCaption** — primitive. Style only.
 - **Pagination** + **Content**, **Item**, **Link**, **Previous**, **Next**, **Ellipsis** — UI primitive for numbered pagination.
-- **DataTable** — TanStack-powered. Both client-side (default) and server-side (presence of `pageCount`) pagination. Built-in rows-per-page selector + `loading` prop.
+- **DataTable** — TanStack-powered. Client-side (default) and server-side (presence of `pageCount`) pagination. Built-in rows-per-page selector + `loading` prop.
 - **FilePicker** + **FilePickerDropzone**, **FilePickerTrigger**, **FilePickerInput**, **FilePickerList**, **FilePickerItem**, **FilePickerClear** — compound file picker with click + drag-and-drop, controlled/uncontrolled, per-file preview/size/remove, `accept`/`maxSize`/`maxFiles` validation via `onError(reason, file?)`. Default layout renders dropzone + trigger + list if no children passed; pass children for full compound control. Also exports `formatBytes` helper and `FilePickerErrorReason` type.
-- **Calendar** — themed `react-day-picker` v10. Modes: `single` | `range` | `multiple`. Forwards all `DayPickerProps` including `numberOfMonths`, `disabled` matchers, `defaultMonth`. Override per-element classes via `classNames`. Use directly for inline calendars; wrap in `<Popover>` for custom date-range pickers.
-- **DatePicker** + **DatePickerTrigger**, **DatePickerContent** — single-date popover picker built on `Popover` + `Calendar`. Controlled (`value`/`onValueChange`) or uncontrolled (`defaultValue`). `minDate`/`maxDate` bounds, `locale` (Intl.DateTimeFormat default), custom `format` fn. No-children default renders trigger + content; pass `<DatePickerTrigger>` + `<DatePickerContent>` for compound control.
+- **Calendar** — themed `react-day-picker` v10. Modes: `single` | `range` | `multiple`. Forwards all `DayPickerProps` including `numberOfMonths`, `disabled` matchers, `defaultMonth`. Use directly for inline calendars; wrap in `<Popover>` for custom date-range pickers.
+- **DatePicker** + **DatePickerTrigger**, **DatePickerContent** — single-date popover picker built on `Popover` + `Calendar`. Controlled (`value`/`onValueChange`) or uncontrolled (`defaultValue`). `minDate`/`maxDate` bounds, `locale` (Intl.DateTimeFormat default), custom `format` fn.
 
 ## Theming
 
-Override CSS variables AFTER the theme.css import — every component picks up the cascade:
+Override CSS variables AFTER the preset import — every component picks up the cascade:
 
 ```css
 :root {
-  --primary: oklch(0.40 0.10 250);   /* deep blue accent */
+  --primary: oklch(0.40 0.10 250);
   --ring: oklch(0.40 0.10 250);
-  --radius: 0.5rem;                   /* softer corners */
+  --radius: 0.5rem;
 }
 .dark {
   --primary: oklch(0.65 0.10 250);

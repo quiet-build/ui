@@ -83,16 +83,17 @@ function ThemingDemo({ primary, ring, radius, fontSerif }: Args) {
 }
 
 const meta: Meta<typeof ThemingDemo> = {
-  title: 'Guides/Theming',
+  title: 'Guides/Token Playground',
   component: ThemingDemo,
   tags: ['autodocs', 'ai-generated'],
   parameters: {
     docs: {
       description: {
         component:
-          'Drag the controls in the panel below to override Manuscript tokens live. ' +
+          'Drag the controls in the panel below to override theme tokens live. ' +
           'In a real consuming app you would put these declarations in a `:root` block ' +
-          'in your app CSS after `@import "@quietbuildlab/ui/theme.css"`. See `THEMING.md`.',
+          'in your app CSS *after* importing a preset (e.g. `@import "@quietbuildlab/ui/themes/midnight.css"`). ' +
+          'Use this to experiment with custom colors, radius, and fonts on top of any preset. See `THEMING.md`.',
       },
     },
   },

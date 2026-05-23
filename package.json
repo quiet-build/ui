@@ -21,7 +21,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./theme.css": "./dist/theme.css"
+    "./theme.css": "./dist/theme.css",
+    "./themes.css": "./dist/themes/index.css",
+    "./themes/manuscript.css": "./dist/themes/manuscript.css",
+    "./themes/midnight.css": "./dist/themes/midnight.css",
+    "./themes/slate.css": "./dist/themes/slate.css",
+    "./themes/sunset.css": "./dist/themes/sunset.css",
+    "./themes/ocean.css": "./dist/themes/ocean.css",
+    "./themes/mono.css": "./dist/themes/mono.css"
   },
   "imports": {
     "#components/*": "./src/components/*.tsx",
@@ -31,7 +38,7 @@
   "scripts": {
     "dev": "vite --config preview/vite.config.ts",
     "preview:build": "vite build --config preview/vite.config.ts",
-    "build": "tsup && cp src/theme.css dist/theme.css && node scripts/check-dist.mjs",
+    "build": "tsup && rm -rf dist/themes && cp -R src/themes dist/themes && cp src/theme.css dist/theme.css && node scripts/check-dist.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "storybook": "storybook dev -p 6006",

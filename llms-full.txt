@@ -1,9 +1,9 @@
 # @quietbuildlab/ui — Full API Reference
 
-> Themed shadcn/ui component library — the "Manuscript" design system. Warm paper light +
-> warm-charcoal dark, Forest accent, Lora serif over Inter sans, 4px radius. One npm package,
-> one canonical theme; every quietbuildlab app inherits the same look. Re-themable per app via
-> CSS variable overrides.
+> Themed shadcn/ui component library. Ships six ready-made themes (Manuscript, Midnight,
+> Slate, Sunset, Ocean, Mono), each light + dark, and 31 components on Radix UI + Tailwind v4.
+> Pick a theme with one CSS import or switch at runtime via `data-theme`. Re-themable further
+> via CSS variable overrides.
 
 ---
 
@@ -15,7 +15,17 @@ npm install @quietbuildlab/ui
 
 Requires Tailwind CSS v4 and React 18 or 19.
 
-In the consumer app's main CSS file:
+In the consumer app's main CSS file, pick ONE of these three setups.
+
+### A) Single preset (most common)
+
+```css
+@import "tailwindcss";
+@import "@quietbuildlab/ui/themes/midnight.css";   /* manuscript | midnight | slate | sunset | ocean | mono */
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+### B) Backward-compat (Manuscript only)
 
 ```css
 @import "tailwindcss";
@@ -23,15 +33,47 @@ In the consumer app's main CSS file:
 @source "../node_modules/@quietbuildlab/ui/dist";
 ```
 
-Order matters: tailwind first, then theme.css, then @source so Tailwind scans the package's
-built JS for utility classes.
+### C) Runtime theme switching
+
+```css
+@import "tailwindcss";
+@import "@quietbuildlab/ui/themes.css";
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+Then set the theme on `<html>`:
+
+```ts
+document.documentElement.dataset.theme = "ocean"   // any preset name
+```
+
+Default if no `data-theme` is set: Manuscript.
+
+Order matters in all setups: tailwind first, then theme/themes CSS, then @source so Tailwind
+scans the package's built JS for utility classes.
+
+## Themes shipped
+
+| Theme | Vibe | Accent | Radius | Type |
+|---|---|---|---|---|
+| Manuscript | Warm paper, editorial | Forest green | 4px | Lora + Inter |
+| Midnight | Cool, focused | Indigo | 6px | Inter |
+| Slate | Neutral, corporate | Slate-blue | 4px | Inter |
+| Sunset | Warm, friendly | Coral | 10px | Inter |
+| Ocean | Calm SaaS | Teal | 6px | Inter |
+| Mono | Brutalist B/W | Black/white | 0px | Inter + mono |
 
 ## Importing
 
 All components are named exports from the package root:
 
 ```tsx
-import { Button, Card, CardHeader, Dialog, DialogTrigger, DialogContent } from '@quietbuildlab/ui'
+import {
+  Button, Card, CardHeader,
+  Dialog, DialogTrigger, DialogContent,
+  Sheet, SheetTrigger, SheetContent,
+  AlertDialog, AlertDialogTrigger, AlertDialogContent,
+} from '@quietbuildlab/ui'
 ```
 
 Do NOT deep-import (no `from '@quietbuildlab/ui/dist/...'`).
@@ -44,17 +86,24 @@ Toggle a `dark` class on `<html>`:
 document.documentElement.classList.toggle('dark', isDark)
 ```
 
+In runtime-switching mode, typically toggle both:
+
+```ts
+document.documentElement.dataset.theme = "midnight"
+document.documentElement.classList.toggle('dark', isDark)
+```
+
 The library does NOT ship a theme-provider — apps own the toggle.
 
 ## Theming
 
-Override CSS variables AFTER the theme.css import:
+Override CSS variables AFTER the preset import:
 
 ```css
 :root {
-  --primary: oklch(0.40 0.10 250);   /* deep blue accent */
+  --primary: oklch(0.40 0.10 250);
   --ring: oklch(0.40 0.10 250);
-  --radius: 0.5rem;                   /* softer corners */
+  --radius: 0.5rem;
 }
 .dark {
   --primary: oklch(0.65 0.10 250);
@@ -675,14 +724,156 @@ export function OrdersTable() {
 
 ---
 
+## Group: Feedback & Overlays (new in v0.6)
+
+### Alert
+
+Inline non-blocking status banner. Use for info / warning / success / error messages that
+don't require user action. For blocking yes/no confirmations, use `AlertDialog` instead.
+
+```tsx
+interface AlertProps extends React.ComponentProps<"div"> {
+  variant?: "default" | "destructive"
+}
+```
+
+Subcomponents: `AlertTitle`, `AlertDescription`. A leading `<svg>` icon is auto-styled.
+
+```tsx
+<Alert>
+  <InfoIcon />
+  <AlertTitle>Heads up</AlertTitle>
+  <AlertDescription>You can dismiss this anytime.</AlertDescription>
+</Alert>
+
+<Alert variant="destructive">
+  <TriangleAlertIcon />
+  <AlertTitle>Connection failed</AlertTitle>
+  <AlertDescription>Check your network and try again.</AlertDescription>
+</Alert>
+```
+
+### AlertDialog
+
+Blocking yes/no confirmation modal. Use for destructive actions (delete, sign-out, discard).
+Built on Radix AlertDialog. Always include both `AlertDialogAction` and `AlertDialogCancel`.
+
+`AlertDialogAction` has destructive-button styling by default. `AlertDialogCancel` has
+outline-button styling.
+
+```tsx
+<AlertDialog>
+  <AlertDialogTrigger asChild><Button variant="destructive">Delete</Button></AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+      <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### Sheet
+
+Slide-in panel anchored to an edge. Built on Radix Dialog so it traps focus.
+Side prop on `SheetContent`: `"top" | "right" (default) | "bottom" | "left"`.
+
+```tsx
+<Sheet>
+  <SheetTrigger asChild><Button>Open menu</Button></SheetTrigger>
+  <SheetContent side="left">
+    <SheetHeader>
+      <SheetTitle>Menu</SheetTitle>
+      <SheetDescription>Navigate the app.</SheetDescription>
+    </SheetHeader>
+    <nav className="grid gap-2 p-4">…</nav>
+  </SheetContent>
+</Sheet>
+```
+
+## Group: Disclosure & Identity (new in v0.6)
+
+### Accordion
+
+Vertical stack of collapsible sections. `type="single"` allows one open at a time (pass
+`collapsible` to allow zero too); `type="multiple"` allows several.
+
+```tsx
+<Accordion type="single" collapsible>
+  <AccordionItem value="a">
+    <AccordionTrigger>How does billing work?</AccordionTrigger>
+    <AccordionContent>Monthly, billed in advance.</AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="b">
+    <AccordionTrigger>Can I cancel?</AccordionTrigger>
+    <AccordionContent>Yes, anytime.</AccordionContent>
+  </AccordionItem>
+</Accordion>
+```
+
+### Avatar
+
+User image with text fallback. Default size 32px; change via `className` (`size-6`,
+`size-10`, `size-14`, etc.). The fallback renders if the image fails or is loading.
+
+```tsx
+<Avatar>
+  <AvatarImage src="https://example.com/u.jpg" alt="Ada Lovelace" />
+  <AvatarFallback>AL</AvatarFallback>
+</Avatar>
+
+<Avatar className="size-10">
+  <AvatarFallback>MW</AvatarFallback>
+</Avatar>
+```
+
+Group avatars with negative spacing:
+
+```tsx
+<div className="flex -space-x-2">
+  <Avatar className="border-2 border-background"><AvatarFallback>A</AvatarFallback></Avatar>
+  <Avatar className="border-2 border-background"><AvatarFallback>B</AvatarFallback></Avatar>
+  <Avatar className="border-2 border-background"><AvatarFallback>+3</AvatarFallback></Avatar>
+</div>
+```
+
+## Group: Inputs (new in v0.6)
+
+### Slider
+
+Range input. Pass `defaultValue={[50]}` (uncontrolled) or `value={[v]} onValueChange={setV}`
+(controlled). Two-element arrays render a range slider with two thumbs.
+
+```tsx
+interface SliderProps extends React.ComponentProps<typeof SliderPrimitive.Root> {
+  // forwards everything to Radix Slider; useful props:
+  // min, max, step, defaultValue, value, onValueChange, disabled, orientation
+}
+```
+
+```tsx
+<Slider defaultValue={[50]} min={0} max={100} step={1} />
+<Slider defaultValue={[20, 80]} min={0} max={100} step={5} />
+
+// Controlled
+const [v, setV] = useState([35])
+<Slider value={v} onValueChange={setV} min={0} max={100} />
+```
+
+---
+
 ## Composition rules
 
 1. **Tooltip needs `<TooltipProvider>` somewhere up the tree.** Wrap the app once at the root.
-2. **Dialog / DropdownMenu / Tooltip / Select content portals to `document.body`.** They render
+2. **Dialog / AlertDialog / Sheet / DropdownMenu / Tooltip / Select content portals to `document.body`.** They render
    outside their parent's DOM tree. Pass `className` to `*Content` for styling.
 3. **Compound components stay together.** `<Card>` is a styled div on its own, but `<CardHeader>`
-   etc. must be children of `<Card>`. Same for `<Tabs>`, `<Dialog>`, `<DropdownMenu>`,
-   `<Select>`, `<RadioGroup>`.
+   etc. must be children of `<Card>`. Same for `<Tabs>`, `<Dialog>`, `<AlertDialog>`, `<Sheet>`,
+   `<Accordion>`, `<DropdownMenu>`, `<Select>`, `<RadioGroup>`.
 4. **Use semantic tokens, not raw colors.** `bg-destructive`, `text-foreground`, `border-input`
    retheme automatically. `bg-red-500` does not.
 5. **`asChild` (Radix Slot) for polymorphism.** `<Button asChild><Link to="/foo">Go</Link></Button>`
@@ -695,8 +886,11 @@ export function OrdersTable() {
 - **Don't use raw color utilities** (`bg-red-500`) — defeats the theme. Use semantic tokens.
 - **Don't import from `dist/`.** Use the package root.
 - **Don't add a `<ThemeProvider>` thinking the library needs one.** Just toggle `.dark` on
-  `<html>`. (Exception: if you want `Toaster` to track the class, then yes — `next-themes`
-  ThemeProvider helps.)
+  `<html>` (and optionally `data-theme` in runtime-switching mode). Exception: if you want
+  `Toaster` to track the class, then yes — `next-themes` ThemeProvider helps.
+- **Don't import more than one theme entrypoint.** `theme.css`, `themes/<name>.css`, and
+  `themes.css` all define `:root` tokens — importing two will cause the second to win, possibly
+  with surprising results. Pick one mode and stick with it.
 - **Don't expect SSR-specific hydration helpers** — components are client-side React; the
   `'use client'` directive is in the components for Next.js App Router compatibility.
 - **Tailwind utility overrides via `className` work via `tailwind-merge`** — `cn('px-2', 'px-4')`

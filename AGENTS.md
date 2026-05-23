@@ -4,7 +4,7 @@ This file tells AI agents (Claude Code, Cursor, Copilot, Codex, etc.) how to use
 
 ## What this library is
 
-`@quietbuildlab/ui` is a themed shadcn/ui component library that ships **one canonical visual identity** ("Manuscript" — warm paper light + warm-charcoal dark, Forest accent, Lora serif headings over Inter body, 4px radius). It exports 21 React components built on Radix UI primitives plus a TanStack-powered `DataTable`. Re-themable per app via CSS variable overrides.
+`@quietbuildlab/ui` is a themed shadcn/ui component library that ships **six ready-made themes** (Manuscript, Midnight, Slate, Sunset, Ocean, Mono) and **31 React components** built on Radix UI primitives plus a TanStack-powered `DataTable`. Themes are swappable per app via a single CSS import, or at runtime via a `data-theme` attribute on `<html>`. Re-themable further via CSS variable overrides.
 
 ## Install in a consumer app
 
@@ -14,27 +14,60 @@ npm install @quietbuildlab/ui
 
 Requires **Tailwind CSS v4** and React 18 or 19.
 
-## CSS setup — do this exactly
+## CSS setup — pick ONE of these three modes
 
-In the consumer app's main CSS file:
+### Mode A: single preset (most common)
 
 ```css
 @import "tailwindcss";
-@import "@quietbuildlab/ui/theme.css";
+@import "@quietbuildlab/ui/themes/midnight.css";   /* or manuscript, slate, sunset, ocean, mono */
 @source "../node_modules/@quietbuildlab/ui/dist";
 ```
 
-Order matters: tailwind first, then theme.css, then `@source` so Tailwind scans the package's built JS for utility classes.
+### Mode B: backward-compat (Manuscript only)
+
+```css
+@import "tailwindcss";
+@import "@quietbuildlab/ui/theme.css";              /* alias for themes/manuscript.css */
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+### Mode C: runtime theme switching
+
+```css
+@import "tailwindcss";
+@import "@quietbuildlab/ui/themes.css";             /* bundles all 6 themes */
+@source "../node_modules/@quietbuildlab/ui/dist";
+```
+
+Then set the theme on `<html>` at runtime:
+
+```ts
+document.documentElement.dataset.theme = "ocean"    // or any preset name
+```
+
+Default if no `data-theme` is set: Manuscript.
+
+**Order matters in all modes**: tailwind first, then theme/themes CSS, then `@source` so Tailwind scans the package's built JS for utility classes.
 
 ## Importing components
 
 All components are named exports from the package root:
 
 ```tsx
-import { Button, Card, CardHeader, CardTitle, Dialog, DialogTrigger, DialogContent } from '@quietbuildlab/ui'
+import {
+  Button, Card, CardHeader, CardTitle,
+  Dialog, DialogTrigger, DialogContent,
+  Sheet, SheetTrigger, SheetContent,
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogAction, AlertDialogCancel,
+} from '@quietbuildlab/ui'
 ```
 
 Do NOT deep-import (no `from '@quietbuildlab/ui/dist/...'`).
+
+## Components shipped (31)
+
+Accordion, Alert, AlertDialog, Avatar, Badge, Button, Calendar, Card, Checkbox, DataTable, DatePicker, Dialog, DropdownMenu, FilePicker, Input, Label, Pagination, Popover, Progress, RadioGroup, Select, Separator, Sheet, Skeleton, Slider, Switch, Table, Tabs, Textarea, Toaster, Tooltip.
 
 ## Dark mode
 
@@ -44,35 +77,51 @@ Toggle a `dark` class on `<html>`:
 document.documentElement.classList.toggle('dark', isDark)
 ```
 
+In runtime-switching mode you typically toggle both at once:
+
+```ts
+document.documentElement.dataset.theme = "midnight"
+document.documentElement.classList.toggle('dark', isDark)
+```
+
 The library does NOT ship a theme-provider component — apps own the toggle.
 
 **Caveat for `Toaster`:** `sonner` uses `next-themes` for color-mode detection. Without a `<ThemeProvider attribute="class">` wrapping the app, `Toaster` falls back to OS `prefers-color-scheme` instead of tracking your `.dark` class. If your app needs `Toaster` to follow the explicit class, install `next-themes` and wrap the root.
 
-## Re-theming per app
+## Re-theming per app (token overrides)
 
-The Manuscript identity is the default. To tweak per app, override CSS variables AFTER the theme.css import:
+Override CSS variables AFTER the preset import:
 
 ```css
+@import "@quietbuildlab/ui/themes/midnight.css";
+
 :root {
-  --primary: oklch(0.40 0.10 250);    /* deep blue accent */
-  --ring: oklch(0.40 0.10 250);
-  --radius: 0.5rem;                    /* softer corners */
+  --primary: oklch(0.62 0.16 50);    /* warm orange */
+  --ring: oklch(0.62 0.16 50);
+  --radius: 0.5rem;
 }
 .dark {
-  --primary: oklch(0.65 0.10 250);
-  --ring: oklch(0.65 0.10 250);
+  --primary: oklch(0.74 0.16 50);
+  --ring: oklch(0.74 0.16 50);
 }
 ```
 
-Override only what you need. Everything else stays Manuscript. See `THEMING.md` for the full token table.
+Override only what you need. Everything else stays the preset's value. See `THEMING.md` for the full token table.
 
 ## Composition rules
 
 1. **Tooltip needs `<TooltipProvider>` somewhere up the tree.** Wrap the app once at the root.
-2. **Dialog / DropdownMenu / Tooltip / Select content portals to `document.body`.** They render outside their parent's DOM tree. Pass `className` to `*Content` for styling.
-3. **Compound components stay together.** `<Card>` is a styled div on its own, but `<CardHeader>` etc. must be children of `<Card>`. Same for `<Tabs>`, `<Dialog>`, `<DropdownMenu>`, `<Select>`, `<RadioGroup>`.
+2. **Dialog / AlertDialog / Sheet / DropdownMenu / Tooltip / Select content portals to `document.body`.** They render outside their parent's DOM tree. Pass `className` to `*Content` for styling.
+3. **Compound components stay together.** `<Card>` is a styled div on its own, but `<CardHeader>` etc. must be children of `<Card>`. Same for `<Tabs>`, `<Dialog>`, `<AlertDialog>`, `<Sheet>`, `<Accordion>`, `<DropdownMenu>`, `<Select>`, `<RadioGroup>`.
 4. **Use semantic tokens, not raw colors.** `bg-destructive`, `text-foreground`, `border-input` retheme automatically. `bg-red-500` does not.
 5. **`asChild` (Radix Slot) for polymorphism.** `<Button asChild><Link to="/foo">Go</Link></Button>` renders the link with button styling. Don't nest `<a>`/`<Link>` inside `<button>`.
+
+## Alert vs AlertDialog
+
+- **`<Alert>`** is inline, non-blocking — an info/warning/success banner.
+- **`<AlertDialog>`** is blocking — a yes/no confirmation modal for destructive actions.
+
+Both are themed. Pick by intent.
 
 ## DataTable specifically
 
@@ -118,7 +167,8 @@ return (
 
 - **Don't use raw color utilities** (`bg-red-500`) — defeats the theme. Use semantic tokens.
 - **Don't import from `dist/`.** Use the package root.
-- **Don't add a `<ThemeProvider>` thinking the library needs one.** Just toggle `.dark` on `<html>`. (Exception: if you want `Toaster` to track the class, then yes — `next-themes` ThemeProvider helps.)
+- **Don't add a `<ThemeProvider>` thinking the library needs one.** Just toggle `.dark` on `<html>` (and optionally `data-theme` in runtime mode). Exception: if you want `Toaster` to track the class, then yes — `next-themes` ThemeProvider helps.
+- **Don't import more than one theme entrypoint.** `theme.css`, `themes/<name>.css`, and `themes.css` all define `:root` tokens — importing two will cause the second to win, possibly with surprising results.
 - **Don't expect SSR-specific hydration helpers** — components are client-side React; the `'use client'` directive is in the components for Next.js App Router compatibility.
 - **Tailwind utility overrides via `className` work via `tailwind-merge`** — `cn('px-2', 'px-4')` resolves to `px-4`. But for tokens, override the CSS variable instead of fighting class specificity.
 

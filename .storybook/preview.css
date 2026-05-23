@@ -1,3 +1,4 @@
 @import "tailwindcss";
-@import "../src/theme.css";
+/* Use the bundled themes so the Storybook toolbar can switch theme via data-theme. */
+@import "../src/themes/index.css";
 @source "../src/components";

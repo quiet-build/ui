@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
+import { CheckIcon, TrashIcon } from 'lucide-react'
 import { Button } from './button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card'
+import { Badge } from './badge'
 
 const meta: Meta<typeof Button> = {
   title: 'UI/Button',
@@ -46,6 +49,51 @@ export const Sizes: Story = {
       <Button>Default</Button>
       <Button size="lg">Large</Button>
     </div>
+  ),
+}
+
+export const Showcase: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A richer demo to show how the current theme affects the button alongside ' +
+          'surrounding chrome (surface, border, radius, font, badge). Switch theme via the ' +
+          '🖌 toolbar dropdown above to compare presets.',
+      },
+    },
+  },
+  render: () => (
+    <Card className="w-96">
+      <CardHeader>
+        <CardTitle className="font-serif text-xl">Publish article</CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          Theme-aware actions and surface
+          <Badge>preview</Badge>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        <div className="flex flex-wrap gap-2">
+          <Button>
+            <CheckIcon /> Publish
+          </Button>
+          <Button variant="secondary">Save draft</Button>
+          <Button variant="outline">Preview</Button>
+          <Button variant="ghost">Cancel</Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm">Small</Button>
+          <Button size="lg">Large</Button>
+          <Button variant="destructive">
+            <TrashIcon /> Delete
+          </Button>
+          <Button variant="link">Read docs →</Button>
+        </div>
+      </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        Notice the surface color, border, radius, and primary accent all shift with the theme.
+      </CardFooter>
+    </Card>
   ),
 }
 
