@@ -1,0 +1,61 @@
+name: Publish to npm
+
+# Push a tag like `v0.6.0` (created by `npm version minor` or manually) and
+# this workflow will verify, build, and publish to npm. `workflow_dispatch`
+# allows re-running a failed release from the Actions tab without re-tagging.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag to publish (e.g. v0.6.0). Defaults to the current branch HEAD.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write   # required for npm provenance via OIDC
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch with a `ref` input, check that ref out;
+          # otherwise default to the tag/branch that triggered the run.
+          ref: ${{ inputs.ref || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      - name: Verify tag matches package.json version
+        run: |
+          # Resolve the version source: input ref, push tag, or current commit.
+          REF="${{ inputs.ref || github.ref_name }}"
+          TAG_VERSION="${REF#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Tag/ref:  $REF (parsed: $TAG_VERSION)"
+          echo "Package:  $PKG_VERSION"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag ($TAG_VERSION) does not match package.json ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      - run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

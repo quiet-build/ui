@@ -115,11 +115,24 @@ npm run build      # build dist/
 
 ## Publishing
 
-Releases are manual:
+Releases are automated via `.github/workflows/publish-npm.yml`. To cut a
+release:
 
 ```
-npm run build
-npm publish --access public
+npm version minor      # or patch / major — updates package.json + creates a v0.X.0 tag
+git push origin main
+git push origin v0.X.0
 ```
 
-Requires membership in the `@quietbuildlab` npm org and `npm login`.
+The tag push triggers the `Publish to npm` workflow which verifies the tag
+matches `package.json`, runs typecheck + tests + build, and publishes to npm
+with provenance.
+
+**One-time setup** (already done if the repo has a working release history):
+
+1. Create an npm **Automation token** at https://www.npmjs.com/settings/<your-account>/tokens (Automation tokens bypass OTP)
+2. Add it as a repository secret named `NPM_TOKEN`
+3. Confirm `@quietbuildlab` org membership on npm
+
+To re-run a failed publish without re-tagging, trigger the workflow manually
+from the Actions tab (`Publish to npm → Run workflow`).
