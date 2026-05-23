@@ -1,5 +1,9 @@
 /* Shared Tailwind v4 wiring. Each theme file imports this once. */
 
+/* Animation utilities (animate-in/out, fade-*, zoom-*, slide-from-*, etc.)
+   that the Radix-state-driven components rely on. Single source of truth. */
+@import "tw-animate-css";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @keyframes accordion-down {

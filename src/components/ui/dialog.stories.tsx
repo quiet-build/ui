@@ -74,8 +74,10 @@ export const WithTrigger: Story = {
   play: async ({ canvas, userEvent }) => {
     const trigger = canvas.getByRole('button', { name: /open dialog/i })
     await userEvent.click(trigger)
-    // Dialog content portals to document.body — query through canvasElement.ownerDocument
-    const { within } = await import('storybook/test')
-    await expect(await within(trigger.ownerDocument.body).findByRole('dialog')).toBeVisible()
+    // Dialog content portals to document.body — query through canvasElement.ownerDocument.
+    // Use waitFor so the toBeVisible check retries until the enter animation completes.
+    const { within, waitFor } = await import('storybook/test')
+    const dialog = await within(trigger.ownerDocument.body).findByRole('dialog')
+    await waitFor(() => expect(dialog).toBeVisible())
   },
 }

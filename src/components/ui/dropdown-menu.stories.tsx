@@ -54,7 +54,8 @@ export const WithTrigger: Story = {
   play: async ({ canvas, userEvent, canvasElement }) => {
     const trigger = canvas.getByRole('button', { name: /file actions/i })
     await userEvent.click(trigger)
-    const { within } = await import('storybook/test')
-    await expect(await within(canvasElement.ownerDocument.body).findByRole('menu')).toBeVisible()
+    const { within, waitFor } = await import('storybook/test')
+    const menu = await within(canvasElement.ownerDocument.body).findByRole('menu')
+    await waitFor(() => expect(menu).toBeVisible())
   },
 }

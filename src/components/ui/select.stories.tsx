@@ -52,8 +52,9 @@ export const Closed: Story = {
   play: async ({ canvas, userEvent, canvasElement }) => {
     const trigger = canvas.getByRole('combobox')
     await userEvent.click(trigger)
-    const { within } = await import('storybook/test')
-    await expect(await within(canvasElement.ownerDocument.body).findByRole('listbox')).toBeVisible()
+    const { within, waitFor } = await import('storybook/test')
+    const listbox = await within(canvasElement.ownerDocument.body).findByRole('listbox')
+    await waitFor(() => expect(listbox).toBeVisible())
   },
 }
 
