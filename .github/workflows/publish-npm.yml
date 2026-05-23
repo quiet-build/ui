@@ -80,6 +80,21 @@ jobs:
 
       - run: npm run build
 
+      # DIAGNOSTIC: dump the OIDC token's subject claim so we can see what
+      # subject value the npm Trusted Publisher entry has to authorize.
+      # Subject is identity, not a secret — safe to log. Remove this step once
+      # publishing is known to be working end-to-end.
+      - name: Debug OIDC subject claim
+        run: |
+          TOKEN_JSON=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm:registry.npmjs.org")
+          JWT=$(echo "$TOKEN_JSON" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).value)")
+          PAYLOAD_B64=$(echo "$JWT" | cut -d. -f2)
+          # Pad and URL-safe-decode
+          PAYLOAD_B64_PADDED=$(printf '%s' "$PAYLOAD_B64" | tr '_-' '/+' | awk '{ l=length($0); if (l%4) printf "%s%s", $0, substr("====", 1, 4-l%4); else print $0 }')
+          echo "=== OIDC token claims (audience: npm:registry.npmjs.org) ==="
+          echo "$PAYLOAD_B64_PADDED" | base64 -d | node -e "const c=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log(JSON.stringify({sub:c.sub, aud:c.aud, repository:c.repository, repository_owner:c.repository_owner, workflow:c.workflow, workflow_ref:c.workflow_ref, ref:c.ref, environment:c.environment, event_name:c.event_name, job_workflow_ref:c.job_workflow_ref}, null, 2))"
+
       # Auth happens via Trusted Publishing (OIDC) — no NPM_TOKEN secret needed.
       # Configure once at: npmjs.com → @quietbuildlab/ui → Settings → Trusted publishing.
       # Provenance is automatic when publishing via OIDC, but pass --provenance
