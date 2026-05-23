@@ -3,6 +3,7 @@
 
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/lora";
+@import "./_shared.css";
 
 :root {
   --radius: 0.25rem;
@@ -90,5 +91,3 @@
   --sidebar-border: oklch(0.34 0.012 80);
   --sidebar-ring: oklch(0.68 0.05 155);
 }
-
-@import "./_shared.css";

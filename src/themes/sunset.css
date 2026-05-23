@@ -2,6 +2,7 @@
    Consumer-app energy. */
 
 @import "@fontsource-variable/inter";
+@import "./_shared.css";
 
 :root {
   --radius: 0.625rem;
@@ -13,7 +14,7 @@
   --popover: oklch(1.0 0.005 60);
   --popover-foreground: oklch(0.25 0.025 30);
 
-  --primary: oklch(0.65 0.18 30);
+  --primary: oklch(0.55 0.18 30);
   --primary-foreground: oklch(0.99 0.012 60);
 
   --secondary: oklch(0.94 0.025 60);
@@ -28,12 +29,12 @@
 
   --border: oklch(0.88 0.025 60);
   --input: oklch(0.88 0.025 60);
-  --ring: oklch(0.65 0.18 30);
+  --ring: oklch(0.55 0.18 30);
 
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-  --chart-1: oklch(0.65 0.18 30);
+  --chart-1: oklch(0.55 0.18 30);
   --chart-2: oklch(0.72 0.16 70);
   --chart-3: oklch(0.60 0.20 10);
   --chart-4: oklch(0.68 0.14 110);
@@ -41,12 +42,12 @@
 
   --sidebar: oklch(0.97 0.015 60);
   --sidebar-foreground: oklch(0.25 0.025 30);
-  --sidebar-primary: oklch(0.65 0.18 30);
+  --sidebar-primary: oklch(0.55 0.18 30);
   --sidebar-primary-foreground: oklch(0.99 0.012 60);
   --sidebar-accent: oklch(0.92 0.035 50);
   --sidebar-accent-foreground: oklch(0.30 0.025 30);
   --sidebar-border: oklch(0.88 0.025 60);
-  --sidebar-ring: oklch(0.65 0.18 30);
+  --sidebar-ring: oklch(0.55 0.18 30);
 }
 
 .dark {
@@ -89,5 +90,3 @@
   --sidebar-border: oklch(0.34 0.020 30);
   --sidebar-ring: oklch(0.72 0.18 40);
 }
-
-@import "./_shared.css";

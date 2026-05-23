@@ -2,6 +2,7 @@
    The minimalist corporate default. */
 
 @import "@fontsource-variable/inter";
+@import "./_shared.css";
 
 :root {
   --radius: 0.25rem;
@@ -89,5 +90,3 @@
   --sidebar-border: oklch(0.32 0.006 250);
   --sidebar-ring: oklch(0.65 0.07 240);
 }
-
-@import "./_shared.css";

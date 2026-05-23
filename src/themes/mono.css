@@ -1,6 +1,7 @@
 /* Mono — high-contrast, brutalist B/W. Sharp 0px corners, mono headings. */
 
 @import "@fontsource-variable/inter";
+@import "./_shared.css";
 
 :root {
   --radius: 0;
@@ -88,5 +89,3 @@
   --sidebar-border: oklch(0.98 0 0);
   --sidebar-ring: oklch(0.98 0 0);
 }
-
-@import "./_shared.css";

@@ -2,6 +2,7 @@
    Pairs well with apps that lean dark-mode-first. */
 
 @import "@fontsource-variable/inter";
+@import "./_shared.css";
 
 :root {
   --radius: 0.375rem;
@@ -89,5 +90,3 @@
   --sidebar-border: oklch(0.30 0.020 260);
   --sidebar-ring: oklch(0.70 0.16 270);
 }
-
-@import "./_shared.css";
