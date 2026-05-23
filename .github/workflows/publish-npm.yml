@@ -49,10 +49,30 @@ jobs:
 
       - run: npm ci
 
-      # vitest browser mode uses Playwright Chromium. The npm install does not
-      # download browser binaries; install them explicitly so npm test can run.
-      - name: Install Playwright Chromium
+      # vitest browser mode uses Playwright Chromium. Cache ~/.cache/ms-playwright
+      # keyed on the Playwright version so the binary download (~50s) only runs
+      # when Playwright is actually upgraded. GitHub Actions evicts cache entries
+      # after 7 days of no access, so infrequent releases may still miss.
+      - name: Resolve Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('./node_modules/playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Chromium (cache miss only)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+
+      # Even on cache hit, system shared libraries may need refreshing on a new
+      # runner image. install-deps is fast (~5s) and idempotent.
+      - name: Ensure Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - run: npm run typecheck
 
