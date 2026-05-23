@@ -174,8 +174,8 @@ return (
 
 ## Where to look for more
 
-- Live Storybook: https://quietbuildlab.github.io/ui/
-- llms.txt (concise index): https://quietbuildlab.github.io/ui/llms.txt
-- llms-full.txt (full API): https://quietbuildlab.github.io/ui/llms-full.txt
-- THEMING.md: https://github.com/quietbuildlab/ui/blob/main/THEMING.md
-- Source: https://github.com/quietbuildlab/ui
+- Live Storybook: https://quiet-build.github.io/ui/
+- llms.txt (concise index): https://quiet-build.github.io/ui/llms.txt
+- llms-full.txt (full API): https://quiet-build.github.io/ui/llms-full.txt
+- THEMING.md: https://github.com/quiet-build/ui/blob/main/THEMING.md
+- Source: https://github.com/quiet-build/ui

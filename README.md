@@ -3,8 +3,8 @@
 The shared UI component library for quietbuildlab apps. Ships **six ready-made
 themes** plus 31 themable React components built on Radix UI + Tailwind v4.
 
-📘 **[Live Storybook → quietbuildlab.github.io/ui](https://quietbuildlab.github.io/ui/)**
-🤖 **AI-friendly:** [`llms.txt`](https://quietbuildlab.github.io/ui/llms.txt) · [`llms-full.txt`](https://quietbuildlab.github.io/ui/llms-full.txt) · [`AGENTS.md`](./AGENTS.md)
+📘 **[Live Storybook → quiet-build.github.io/ui](https://quiet-build.github.io/ui/)**
+🤖 **AI-friendly:** [`llms.txt`](https://quiet-build.github.io/ui/llms.txt) · [`llms-full.txt`](https://quiet-build.github.io/ui/llms-full.txt) · [`AGENTS.md`](./AGENTS.md)
 
 ## Install
 
@@ -136,7 +136,7 @@ The workflow authenticates to npm via **Trusted Publishing** (OIDC) — no
 1. **npmjs.com → `@quietbuildlab/ui` → Settings → Trusted publishing**
 2. Select publisher: **GitHub Actions**
 3. Fields:
-   - Organization or user: `quietbuildlab`
+   - Organization or user: `quiet-build`
    - Repository: `ui`
    - Workflow filename: `publish-npm.yml`
    - Environment: *(leave empty)*

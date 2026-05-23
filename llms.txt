@@ -96,8 +96,8 @@ Token groups: surfaces (`background`, `foreground`, `card`, `popover`), accent (
 
 ## More
 
-- [Live Storybook](https://quietbuildlab.github.io/ui/) — every component with controls
-- [llms-full.txt](https://quietbuildlab.github.io/ui/llms-full.txt) — full API + composition rules + gotchas
-- [AGENTS.md](https://github.com/quietbuildlab/ui/blob/main/AGENTS.md) — usage contract for AI agents
-- [THEMING.md](https://github.com/quietbuildlab/ui/blob/main/THEMING.md) — full token table + worked examples
-- [GitHub repo](https://github.com/quietbuildlab/ui)
+- [Live Storybook](https://quiet-build.github.io/ui/) — every component with controls
+- [llms-full.txt](https://quiet-build.github.io/ui/llms-full.txt) — full API + composition rules + gotchas
+- [AGENTS.md](https://github.com/quiet-build/ui/blob/main/AGENTS.md) — usage contract for AI agents
+- [THEMING.md](https://github.com/quiet-build/ui/blob/main/THEMING.md) — full token table + worked examples
+- [GitHub repo](https://github.com/quiet-build/ui)
