@@ -3,12 +3,12 @@
   "version": "0.6.0",
   "description": "Shared UI component library — the Manuscript design system.",
   "license": "MIT",
-  "homepage": "https://quietbuildlab.github.io/ui/",
+  "homepage": "https://quiet-build.github.io/ui/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/quietbuildlab/ui.git"
+    "url": "git+https://github.com/quiet-build/ui.git"
   },
-  "bugs": "https://github.com/quietbuildlab/ui/issues",
+  "bugs": "https://github.com/quiet-build/ui/issues",
   "type": "module",
   "sideEffects": [
     "**/*.css"
