@@ -60,6 +60,7 @@ Compound — full control over composition:
 
 - If you don't pass children, FilePicker renders a default dropzone + trigger + list layout.
 - For *uploading* files, hook into `onValueChange` and send them yourself — FilePicker is selection only.
+- **Accessibility**: `<FilePickerDropzone>` is `role="button"` and keyboard-activatable (Enter / Space). When composing your own layout, **don't nest a `<FilePickerTrigger>` button inside `<FilePickerDropzone>`** — the dropzone is already the button, and a nested interactive widget confuses screen readers. Put the trigger button outside the dropzone instead.
 
 ## Related
 

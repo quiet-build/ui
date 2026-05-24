@@ -154,9 +154,11 @@ export function DataTable<TData, TValue>({
   })
 
   const totalPages = Math.max(table.getPageCount(), 1)
+  const currentPage = pagination.pageIndex + 1
+  const rowsPerPageId = React.useId()
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className={cn('space-y-3', className)} aria-busy={loading || undefined}>
       <div className="rounded-md border">
         <Table className={cn('transition-opacity', loading && 'opacity-60')}>
           <TableHeader>
@@ -199,13 +201,15 @@ export function DataTable<TData, TValue>({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">Rows per page</span>
+          <span id={rowsPerPageId} className="text-muted-foreground text-sm">
+            Rows per page
+          </span>
           <Select
             value={String(pagination.pageSize)}
             onValueChange={(value) => table.setPageSize(Number(value))}
             disabled={loading}
           >
-            <SelectTrigger className="h-8 w-[80px]">
+            <SelectTrigger className="h-8 w-[80px]" aria-labelledby={rowsPerPageId}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -221,10 +225,13 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center gap-3">
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             {loading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
             ) : null}
-            <span>
-              Page {pagination.pageIndex + 1} of {totalPages}
+            {/* aria-live announces page changes; aria-atomic ensures the whole
+                "Page X of Y / Loading" message is re-read on update. */}
+            <span role="status" aria-live="polite" aria-atomic="true">
+              {loading ? 'Loading, ' : ''}
+              Page {currentPage} of {totalPages}
             </span>
           </div>
           <div className="flex gap-2">
@@ -233,6 +240,7 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => table.previousPage()}
               disabled={loading || !table.getCanPreviousPage()}
+              aria-label={`Go to previous page, page ${Math.max(currentPage - 1, 1)}`}
             >
               Previous
             </Button>
@@ -241,6 +249,7 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => table.nextPage()}
               disabled={loading || !table.getCanNextPage()}
+              aria-label={`Go to next page, page ${Math.min(currentPage + 1, totalPages)}`}
             >
               Next
             </Button>

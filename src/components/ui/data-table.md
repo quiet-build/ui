@@ -79,6 +79,7 @@ async function handlePaginationChange(next: PaginationState) {
 - `onPaginationChange` receives the *full* next `PaginationState` (both `pageIndex` AND `pageSize`). Handle both — the user can change either.
 - `ColumnDef` types come from `@tanstack/react-table`; import them directly from there.
 - For a static styled table without pagination, use the `<Table>` primitives instead.
+- **Accessibility**: the outer wrapper sets `aria-busy` while `loading` is true. The "Page X of Y" indicator is a polite live region, so screen readers announce page changes (and the loading state). Prev/Next buttons have full-context `aria-label`s describing the destination page. The rows-per-page Select is labelled by the visible "Rows per page" text via `aria-labelledby`.
 
 ## Related
 

@@ -234,13 +234,20 @@ function FilePicker({
 }
 
 function FilePickerDefaultLayout() {
+  const { multiple, files } = useFilePicker()
   return (
     <>
-      <FilePickerDropzone>
-        <UploadCloud className="size-8 text-muted-foreground" aria-hidden />
+      {/* The dropzone is the button now (role="button", keyboard-activatable).
+          We don't nest a separate <FilePickerTrigger /> button inside — nested
+          interactive controls confuse screen readers and complicate focus.
+          The text content describes the action. */}
+      <FilePickerDropzone aria-label={multiple ? "Choose files or drop files here" : "Choose a file or drop a file here"}>
+        <UploadCloud className="size-8 text-muted-foreground" aria-hidden="true" />
         <div className="text-center">
-          <FilePickerTrigger />
-          <p className="mt-2 text-sm text-muted-foreground">or drag and drop</p>
+          <span className="text-sm font-medium">{defaultTriggerLabel(files.length, multiple)}</span>
+          {/* Drag-and-drop hint is purely visual — keyboard/SR users can't drag
+              and the aria-label already says "or drop files here". */}
+          <p aria-hidden="true" className="mt-2 text-sm text-muted-foreground">or drag and drop</p>
         </div>
       </FilePickerDropzone>
       <FilePickerList />
@@ -329,19 +336,46 @@ function defaultTriggerLabel(count: number, multiple: boolean): string {
 function FilePickerDropzone({
   className,
   children,
+  onClick,
+  onKeyDown,
   onDragEnter,
   onDragOver,
   onDragLeave,
   onDrop,
   ...props
 }: React.ComponentProps<"div">) {
-  const { addFiles, disabled, isDragActive, setDragActive } = useFilePicker()
+  const { addFiles, open, disabled, isDragActive, setDragActive } = useFilePicker()
   return (
     <div
       {...props}
       data-slot="file-picker-dropzone"
       data-drag-active={isDragActive || undefined}
       data-disabled={disabled || undefined}
+      // Keyboard users need a focusable entry point that's not just the drag
+      // affordance — Enter/Space opens the native file picker the same way
+      // mouse click does. role="button" makes screen readers announce purpose.
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled || undefined}
+      onClick={(e) => {
+        onClick?.(e)
+        if (e.defaultPrevented || disabled) return
+        // Don't re-trigger when clicking an interactive child (e.g. a nested
+        // button or link). Those handle their own activation.
+        const target = e.target as HTMLElement
+        if (target.closest("button, a, input, select, textarea, [role=button]") !== e.currentTarget) {
+          return
+        }
+        open()
+      }}
+      onKeyDown={(e) => {
+        onKeyDown?.(e)
+        if (e.defaultPrevented || disabled) return
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          open()
+        }
+      }}
       onDragEnter={(e) => {
         onDragEnter?.(e)
         if (e.defaultPrevented || disabled) return
@@ -370,6 +404,7 @@ function FilePickerDropzone({
       }}
       className={cn(
         "flex flex-col items-center justify-center gap-3 rounded-md border-2 border-dashed border-input bg-transparent p-6 transition-colors outline-none",
+        "cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "data-[drag-active]:border-ring data-[drag-active]:bg-accent/50",
         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         className,

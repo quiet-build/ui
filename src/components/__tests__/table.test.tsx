@@ -150,7 +150,7 @@ describe('DataTable rows-per-page selector', () => {
 })
 
 describe('DataTable loading state', () => {
-  it('shows a loading indicator with aria-label when loading', () => {
+  it('announces loading via a polite live region when loading', () => {
     render(
       <DataTable
         columns={columns}
@@ -160,7 +160,11 @@ describe('DataTable loading state', () => {
         loading
       />,
     )
-    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
+    // Status region carries the "Loading" announcement so screen readers
+    // hear pagination state changes (replaces the prior decorative-icon label).
+    const status = screen.getByRole('status')
+    expect(status).toHaveTextContent(/loading/i)
+    expect(status).toHaveTextContent(/page 1 of 5/i)
   })
 
   it('disables Prev, Next, and the rows-per-page selector when loading', () => {
@@ -178,8 +182,9 @@ describe('DataTable loading state', () => {
     expect(screen.getByRole('combobox')).toBeDisabled()
   })
 
-  it('does not show the indicator when loading is false', () => {
+  it('does not announce loading when loading is false', () => {
     render(<DataTable columns={columns} data={rows} />)
-    expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
+    const status = screen.getByRole('status')
+    expect(status).not.toHaveTextContent(/loading/i)
   })
 })
