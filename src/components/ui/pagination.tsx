@@ -39,25 +39,44 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean
+  /**
+   * When true, the link renders as a disabled control: `aria-disabled="true"`,
+   * `tabIndex={-1}`, no `href`, and pointer events removed. Use this at the
+   * pagination boundaries — e.g. `<PaginationPrevious disabled />` on page 1
+   * so screen-reader users hear "Go to previous page, dimmed" instead of an
+   * active link that does nothing.
+   */
+  disabled?: boolean
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<"a">
 
 function PaginationLink({
   className,
   isActive,
+  disabled,
   size = "icon",
+  href,
+  onClick,
   ...props
 }: PaginationLinkProps) {
   return (
     <a
       aria-current={isActive ? "page" : undefined}
+      aria-disabled={disabled || undefined}
       data-slot="pagination-link"
       data-active={isActive}
+      data-disabled={disabled || undefined}
+      // Drop href when disabled so the link is not activatable; preserve
+      // tabbable focus only when enabled.
+      href={disabled ? undefined : href}
+      tabIndex={disabled ? -1 : undefined}
+      onClick={disabled ? (e) => e.preventDefault() : onClick}
       className={cn(
         buttonVariants({
           variant: isActive ? "outline" : "ghost",
           size,
         }),
+        disabled && "pointer-events-none opacity-50",
         className
       )}
       {...props}

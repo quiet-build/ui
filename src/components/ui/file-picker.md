@@ -60,7 +60,10 @@ Compound — full control over composition:
 
 - If you don't pass children, FilePicker renders a default dropzone + trigger + list layout.
 - For *uploading* files, hook into `onValueChange` and send them yourself — FilePicker is selection only.
-- **Accessibility**: `<FilePickerDropzone>` is `role="button"` and keyboard-activatable (Enter / Space). When composing your own layout, **don't nest a `<FilePickerTrigger>` button inside `<FilePickerDropzone>`** — the dropzone is already the button, and a nested interactive widget confuses screen readers. Put the trigger button outside the dropzone instead.
+- **Accessibility**:
+  - `<FilePickerDropzone>` is `role="button"` and keyboard-activatable (Enter / Space). When composing your own layout, **don't nest a `<FilePickerTrigger>` button inside `<FilePickerDropzone>`** — the dropzone is already the button, and a nested interactive widget confuses screen readers. Put the trigger button outside the dropzone instead.
+  - Removing a file is announced via a polite live region (`Removed {filename}`) so screen-reader users hear the action took effect.
+  - After removing a file, focus moves to the next item's Remove button automatically. If the list becomes empty, focus moves back to the dropzone (or the trigger). This prevents focus from being lost to `<body>`.
 
 ## Related
 

@@ -15,6 +15,12 @@ import { Button } from "#components/ui/button"
  * Use `<DialogClose asChild>` to wrap a Cancel button so clicking it closes
  * the dialog.
  *
+ * Accessibility — `DialogContent` shows a close (✕) button by default. If you
+ * pass `showCloseButton={false}`, keep at least one of these working so users
+ * can dismiss the dialog: Radix's default Escape key, the default
+ * outside-click, or your own visible `<DialogClose>`-wrapped button. Disabling
+ * all three traps users with no way out.
+ *
  * @example
  * <Dialog>
  *   <DialogTrigger asChild><Button>Open</Button></DialogTrigger>

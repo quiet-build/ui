@@ -15,7 +15,11 @@ import {
 
 ## Props
 
-**PaginationLink** extra props: `isActive?: boolean`, `size` (matches Button `size`), plus standard `<a>` attributes (`href`, `onClick`, etc.).
+**PaginationLink** extra props:
+- `isActive?: boolean` — marks the current page (`aria-current="page"`)
+- `disabled?: boolean` — renders dimmed + `aria-disabled="true"` + drops href; use on Prev/Next at the boundaries
+- `size` (matches Button `size`)
+- standard `<a>` attributes (`href`, `onClick`, etc.)
 
 ## Usage
 
@@ -29,6 +33,13 @@ import {
     <PaginationItem><PaginationNext href="?page=2" /></PaginationItem>
   </PaginationContent>
 </Pagination>
+```
+
+Disable Prev on the first page and Next on the last:
+
+```tsx
+<PaginationPrevious disabled={page === 1} href={page > 1 ? `?page=${page-1}` : undefined} />
+<PaginationNext     disabled={page === total} href={page < total ? `?page=${page+1}` : undefined} />
 ```
 
 ## Notes

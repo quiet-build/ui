@@ -7,8 +7,15 @@ import { cn } from "#lib/utils"
  * User avatar with image + fallback. Falls back to `AvatarFallback`
  * (usually initials) when the image fails to load or while it's loading.
  *
+ * Accessibility: when the image loads, screen readers read the `alt` on
+ * `AvatarImage`. When the image fails and the fallback ("AL") renders, AT
+ * users hear just the initials with no context. If the fallback might be
+ * shown to AT users, set an `aria-label` on `<Avatar>` (e.g.
+ * `aria-label="Ada Lovelace"`) so the avatar has a descriptive name in both
+ * states.
+ *
  * @example
- * <Avatar>
+ * <Avatar aria-label="Ada Lovelace">
  *   <AvatarImage src="https://example.com/u.jpg" alt="Ada Lovelace" />
  *   <AvatarFallback>AL</AvatarFallback>
  * </Avatar>

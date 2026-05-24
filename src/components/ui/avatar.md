@@ -43,6 +43,14 @@ Group avatars with negative spacing:
 
 - Always include `AvatarFallback` — image loading failure is common and the fallback is the accessible identifier.
 - Set a meaningful `alt` on `AvatarImage` ("Ada Lovelace") — empty alt only if the avatar is purely decorative.
+- **Accessibility**: when the image loads, AT reads `alt`. When it fails over to the fallback ("AL"), AT reads only the initials. If your avatars frequently fail to load (avatar APIs going down, broken URLs), set an `aria-label` on `<Avatar>` itself so the name is announced in both states:
+
+```tsx
+<Avatar aria-label="Ada Lovelace">
+  <AvatarImage src="https://example.com/u.jpg" alt="Ada Lovelace" />
+  <AvatarFallback>AL</AvatarFallback>
+</Avatar>
+```
 
 ## Related
 

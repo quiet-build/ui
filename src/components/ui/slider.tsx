@@ -3,13 +3,34 @@ import { Slider as SliderPrimitive } from "radix-ui"
 
 import { cn } from "#lib/utils"
 
+type SliderProps = React.ComponentProps<typeof SliderPrimitive.Root> & {
+  /**
+   * Per-thumb accessible labels. Position N in the array labels thumb N (in
+   * the order they appear in `value` / `defaultValue`). Useful for range
+   * sliders where each thumb has a distinct purpose — e.g.
+   * `thumbAriaLabels={["Minimum price", "Maximum price"]}`.
+   *
+   * For single-value sliders, prefer passing `aria-label` on the Slider root
+   * (forwarded to Radix). `thumbAriaLabels` overrides per-thumb labels when
+   * both are present.
+   */
+  thumbAriaLabels?: string[]
+}
+
 /**
  * Range input. Use `defaultValue` (uncontrolled) or `value` + `onValueChange`
  * (controlled). Pass two-element arrays for range sliders.
  *
+ * Accessibility — for range sliders (two thumbs) pass `thumbAriaLabels` so
+ * each thumb announces a distinct name. For single-thumb sliders, an
+ * `aria-label` on the Slider itself is usually enough.
+ *
  * @example
- * <Slider defaultValue={[50]} min={0} max={100} step={1} />
- * <Slider defaultValue={[20, 80]} min={0} max={100} step={5} />
+ * <Slider defaultValue={[50]} min={0} max={100} step={1} aria-label="Volume" />
+ * <Slider
+ *   defaultValue={[20, 80]} min={0} max={100} step={5}
+ *   thumbAriaLabels={["Minimum price", "Maximum price"]}
+ * />
  */
 function Slider({
   className,
@@ -17,8 +38,9 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  thumbAriaLabels,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
+}: SliderProps) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -59,6 +81,7 @@ function Slider({
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
+          aria-label={thumbAriaLabels?.[index]}
           className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border-2 shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
         />
       ))}
@@ -67,3 +90,4 @@ function Slider({
 }
 
 export { Slider }
+export type { SliderProps }

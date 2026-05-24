@@ -49,6 +49,7 @@ import {
 - Always include a `<DialogTitle>` (or pass `aria-labelledby`) for screen readers.
 - `DialogContent` portals to `document.body` — pass `className` to `DialogContent` for sizing/positioning.
 - Wrap a Cancel button with `<DialogClose asChild>` so clicking it closes the dialog.
+- **Accessibility**: `DialogContent` shows a close (✕) button by default. If you pass `showCloseButton={false}`, keep at least one of these working so users can dismiss: Radix's default Escape key, the default outside-click, or your own visible `<DialogClose>`-wrapped button. Disabling all three traps users with no way out.
 
 ## Related
 

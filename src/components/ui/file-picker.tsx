@@ -113,6 +113,14 @@ function FilePicker({
   const files = isControlled ? value! : internal
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const [isDragActive, setDragActive] = React.useState(false)
+  // Polite SR announcement when a file is removed. Auto-clears so successive
+  // removes of the same filename re-announce.
+  const [removedAnnouncement, setRemovedAnnouncement] = React.useState("")
+  React.useEffect(() => {
+    if (!removedAnnouncement) return
+    const id = setTimeout(() => setRemovedAnnouncement(""), 1500)
+    return () => clearTimeout(id)
+  }, [removedAnnouncement])
 
   // Keep the latest handlers in refs so the context value identity stays
   // stable across renders unless `files` actually changes.
@@ -178,7 +186,9 @@ function FilePicker({
 
   const removeFile = React.useCallback(
     (index: number) => {
+      const removed = files[index]
       commit(files.filter((_, i) => i !== index))
+      if (removed) setRemovedAnnouncement(`Removed ${removed.name}`)
     },
     [files, commit],
   )
@@ -228,6 +238,17 @@ function FilePicker({
       >
         <FilePickerInput />
         {children ?? <FilePickerDefaultLayout />}
+        {/* Polite live region — announces "Removed {filename}" when a file is
+            removed. Visually hidden but readable by AT. */}
+        <span
+          data-slot="file-picker-announcer"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {removedAnnouncement}
+        </span>
       </div>
     </FilePickerContext.Provider>
   )
@@ -515,9 +536,39 @@ function FilePickerItem({
             type="button"
             variant="ghost"
             size="icon-sm"
+            data-slot="file-picker-remove"
             aria-label={`Remove ${file.name}`}
             disabled={disabled}
-            onClick={() => removeFile(index)}
+            onClick={(e) => {
+              // Capture sibling-or-fallback focus target BEFORE removing — the
+              // DOM mutation below would otherwise leave focus on <body>.
+              const li = (e.currentTarget as HTMLButtonElement).closest(
+                'li[data-slot="file-picker-item"]',
+              )
+              const targetLi =
+                (li?.nextElementSibling as HTMLElement | null) ??
+                (li?.previousElementSibling as HTMLElement | null)
+              const targetButton = targetLi?.querySelector<HTMLButtonElement>(
+                'button[data-slot="file-picker-remove"]',
+              )
+
+              removeFile(index)
+
+              // Move focus on the next microtask — after React unmounts this
+              // item. If there's another item, focus its remove button. If
+              // the list is empty now, fall back to the dropzone or trigger
+              // so focus doesn't escape to <body>.
+              queueMicrotask(() => {
+                if (targetButton && document.contains(targetButton)) {
+                  targetButton.focus()
+                  return
+                }
+                const fallback = document.querySelector<HTMLElement>(
+                  '[data-slot="file-picker-dropzone"], [data-slot="file-picker-trigger"]',
+                )
+                fallback?.focus()
+              })
+            }}
           >
             <X className="size-4" />
           </Button>
