@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@quietbuildlab/ui'
 
 ## Props
 
-**RadioGroup**: `value`, `defaultValue`, `onValueChange`, `orientation`, `disabled`, `required`, `name`.
+**RadioGroup**: `value`, `defaultValue`, `onValueChange`, `disabled`, `required`, `name`.
 
 **RadioGroupItem**: `value` (required), `id`, `disabled`, `required`.
 

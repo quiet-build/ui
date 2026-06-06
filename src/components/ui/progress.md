@@ -10,10 +10,10 @@ import { Progress } from '@quietbuildlab/ui'
 
 ## Props
 
-`React.ComponentProps<typeof ProgressPrimitive.Root>` — wraps Radix Progress. Key props:
-- `value`: `number` (0–100)
+`React.ComponentProps<typeof ProgressPrimitive.Root>` — wraps Base UI Progress. Key props:
+- `value`: `number` (0–100), or `null` for the indeterminate state
 - `max`: `number` (default 100)
-- `getValueLabel(value, max)`: accessible label generator
+- `getAriaValueText(formattedValue, value)`: accessible label generator
 
 ## Usage
 
@@ -26,8 +26,8 @@ const [progress, setProgress] = useState(0)
 Indeterminate (animated):
 
 ```tsx
-// Omit value to render the indeterminate state
-<Progress className="w-64" />
+// Pass value={null} to render the indeterminate state
+<Progress value={null} className="w-64" />
 ```
 
 ## Notes

@@ -15,7 +15,7 @@ import {
 
 ## Props
 
-**Dialog** (Radix Root): `open`, `defaultOpen`, `onOpenChange`, `modal`.
+**Dialog** (Base UI Root): `open`, `defaultOpen`, `onOpenChange`, `modal`.
 
 **DialogContent** extra prop: `showCloseButton?: boolean` (default `true`).
 
@@ -25,9 +25,7 @@ import {
 
 ```tsx
 <Dialog>
-  <DialogTrigger asChild>
-    <Button variant="outline">Open</Button>
-  </DialogTrigger>
+  <DialogTrigger render={<Button variant="outline">Open</Button>} />
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Rename file</DialogTitle>
@@ -35,9 +33,7 @@ import {
     </DialogHeader>
     <Input defaultValue="invoice.pdf" />
     <DialogFooter>
-      <DialogClose asChild>
-        <Button variant="outline">Cancel</Button>
-      </DialogClose>
+      <DialogClose render={<Button variant="outline">Cancel</Button>} />
       <Button onClick={save}>Save</Button>
     </DialogFooter>
   </DialogContent>
@@ -48,8 +44,8 @@ import {
 
 - Always include a `<DialogTitle>` (or pass `aria-labelledby`) for screen readers.
 - `DialogContent` portals to `document.body` — pass `className` to `DialogContent` for sizing/positioning.
-- Wrap a Cancel button with `<DialogClose asChild>` so clicking it closes the dialog.
-- **Accessibility**: `DialogContent` shows a close (✕) button by default. If you pass `showCloseButton={false}`, keep at least one of these working so users can dismiss: Radix's default Escape key, the default outside-click, or your own visible `<DialogClose>`-wrapped button. Disabling all three traps users with no way out.
+- Wrap a Cancel button with `<DialogClose render={<Button…/>} />` so clicking it closes the dialog.
+- **Accessibility**: `DialogContent` shows a close (✕) button by default. If you pass `showCloseButton={false}`, keep at least one of these working so users can dismiss: Base UI's default Escape key, the default outside-click, or your own visible `<DialogClose>`-rendered button. Disabling all three traps users with no way out.
 
 ## Related
 

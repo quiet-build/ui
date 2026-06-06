@@ -1,74 +1,42 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-
+import {
+  Alert as AlertBase,
+  AlertTitle as AlertTitleBase,
+  AlertDescription as AlertDescriptionBase,
+  AlertAction as AlertActionBase,
+} from "#components/shadcn-base/alert"
 import { cn } from "#lib/utils"
 
-const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-sm grid grid-cols-[0_1fr] has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] gap-y-0.5 items-start [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
-  {
-    variants: {
-      variant: {
-        default: "bg-card text-card-foreground",
-        destructive:
-          "border-destructive/50 bg-destructive/5 text-destructive [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive/90",
-      },
-    },
-    defaultVariants: { variant: "default" },
-  },
-)
-
-/**
- * Inline status banner for non-blocking messages (info, warning, success, error).
- * Use `variant="destructive"` for error/destructive messages.
- *
- * For blocking confirmations (Delete account, etc.) use `<AlertDialog>` instead.
- *
- * @example
- * <Alert>
- *   <InfoIcon />
- *   <AlertTitle>Heads up</AlertTitle>
- *   <AlertDescription>You can dismiss this anytime.</AlertDescription>
- * </Alert>
- */
 function Alert({
   className,
-  variant,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
-  return (
-    <div
-      data-slot="alert"
-      role="alert"
-      className={cn(alertVariants({ variant }), className)}
-      {...props}
-    />
-  )
+}: React.ComponentProps<typeof AlertBase>) {
+  // restyle: prepend overrides before `className`
+  return <AlertBase className={cn(className)} {...props} />
 }
 
-function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="alert-title"
-      className={cn(
-        "col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
-        className,
-      )}
-      {...props}
-    />
-  )
+function AlertTitle({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertTitleBase>) {
+  // restyle: prepend overrides before `className`
+  return <AlertTitleBase className={cn(className)} {...props} />
 }
 
-function AlertDescription({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="alert-description"
-      className={cn(
-        "text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
-        className,
-      )}
-      {...props}
-    />
-  )
+function AlertDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDescriptionBase>) {
+  // restyle: prepend overrides before `className`
+  return <AlertDescriptionBase className={cn(className)} {...props} />
 }
 
-export { Alert, AlertTitle, AlertDescription, alertVariants }
+function AlertAction({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertActionBase>) {
+  // restyle: prepend overrides before `className`
+  return <AlertActionBase className={cn(className)} {...props} />
+}
+
+export { Alert, AlertTitle, AlertDescription, AlertAction }

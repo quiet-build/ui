@@ -17,8 +17,6 @@ import {
 
 **SelectTrigger** extra prop: `size?: "sm" | "default"`.
 
-**SelectContent** extra props: `position?: "item-aligned" | "popper"`, `align?: "start" | "center" | "end"`.
-
 ## Usage
 
 ```tsx

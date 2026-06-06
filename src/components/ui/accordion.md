@@ -10,20 +10,19 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@q
 
 ## Props
 
-**Accordion** (Radix Root):
-- `type`: `"single"` (one open at a time) or `"multiple"` (any number open)
-- `collapsible`: only with `type="single"` — allow the open item to close
-- `value` / `defaultValue` / `onValueChange`
-- `disabled`, `dir`, `orientation`
+**Accordion** (Base UI Root):
+- `multiple`: allow any number of items open at once (default `false` — single-open)
+- `value` / `defaultValue` / `onValueChange` — values are **arrays** (e.g. `["a"]`)
+- `disabled`, `orientation`
 
 **AccordionItem**: `value` (required, unique within the Accordion), `disabled`.
 
 ## Usage
 
-Single-open with collapse:
+Single-open (default — the open item closes when re-clicked):
 
 ```tsx
-<Accordion type="single" collapsible>
+<Accordion>
   <AccordionItem value="a">
     <AccordionTrigger>How does billing work?</AccordionTrigger>
     <AccordionContent>Monthly, billed in advance.</AccordionContent>
@@ -38,7 +37,7 @@ Single-open with collapse:
 Multiple open at once:
 
 ```tsx
-<Accordion type="multiple">
+<Accordion multiple>
   <AccordionItem value="a">…</AccordionItem>
   <AccordionItem value="b">…</AccordionItem>
 </Accordion>

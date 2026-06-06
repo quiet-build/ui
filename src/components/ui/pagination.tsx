@@ -1,146 +1,70 @@
 import * as React from "react"
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoreHorizontalIcon,
-} from "lucide-react"
+  Pagination as PaginationBase,
+  PaginationContent as PaginationContentBase,
+  PaginationEllipsis as PaginationEllipsisBase,
+  PaginationLink as PaginationLinkBase,
+  PaginationNext as PaginationNextBase,
+  PaginationPrevious as PaginationPreviousBase,
+} from "#components/shadcn-base/pagination"
 
 import { cn } from "#lib/utils"
-import { buttonVariants, type Button } from "#components/ui/button"
 
-function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
-  return (
-    <nav
-      role="navigation"
-      aria-label="pagination"
-      data-slot="pagination"
-      className={cn("mx-auto flex w-full justify-center", className)}
-      {...props}
-    />
-  )
+function Pagination({
+  className,
+  ...props
+}: React.ComponentProps<typeof PaginationBase>) {
+  // restyle: prepend overrides before `className`
+  return <PaginationBase className={cn(className)} {...props} />
 }
 
 function PaginationContent({
   className,
   ...props
-}: React.ComponentProps<"ul">) {
-  return (
-    <ul
-      data-slot="pagination-content"
-      className={cn("flex flex-row items-center gap-1", className)}
-      {...props}
-    />
-  )
+}: React.ComponentProps<typeof PaginationContentBase>) {
+  // restyle: prepend overrides before `className`
+  return <PaginationContentBase className={cn(className)} {...props} />
 }
-
-function PaginationItem({ ...props }: React.ComponentProps<"li">) {
-  return <li data-slot="pagination-item" {...props} />
-}
-
-type PaginationLinkProps = {
-  isActive?: boolean
-  /**
-   * When true, the link renders as a disabled control: `aria-disabled="true"`,
-   * `tabIndex={-1}`, no `href`, and pointer events removed. Use this at the
-   * pagination boundaries — e.g. `<PaginationPrevious disabled />` on page 1
-   * so screen-reader users hear "Go to previous page, dimmed" instead of an
-   * active link that does nothing.
-   */
-  disabled?: boolean
-} & Pick<React.ComponentProps<typeof Button>, "size"> &
-  React.ComponentProps<"a">
 
 function PaginationLink({
   className,
-  isActive,
-  disabled,
-  size = "icon",
-  href,
-  onClick,
   ...props
-}: PaginationLinkProps) {
-  return (
-    <a
-      aria-current={isActive ? "page" : undefined}
-      aria-disabled={disabled || undefined}
-      data-slot="pagination-link"
-      data-active={isActive}
-      data-disabled={disabled || undefined}
-      // Drop href when disabled so the link is not activatable; preserve
-      // tabbable focus only when enabled.
-      href={disabled ? undefined : href}
-      tabIndex={disabled ? -1 : undefined}
-      onClick={disabled ? (e) => e.preventDefault() : onClick}
-      className={cn(
-        buttonVariants({
-          variant: isActive ? "outline" : "ghost",
-          size,
-        }),
-        disabled && "pointer-events-none opacity-50",
-        className
-      )}
-      {...props}
-    />
-  )
+}: React.ComponentProps<typeof PaginationLinkBase>) {
+  // restyle: prepend overrides before `className`
+  return <PaginationLinkBase className={cn(className)} {...props} />
 }
 
 function PaginationPrevious({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) {
-  return (
-    <PaginationLink
-      aria-label="Go to previous page"
-      size="default"
-      className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
-      {...props}
-    >
-      <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
-    </PaginationLink>
-  )
+}: React.ComponentProps<typeof PaginationPreviousBase>) {
+  // restyle: prepend overrides before `className`
+  return <PaginationPreviousBase className={cn(className)} {...props} />
 }
 
 function PaginationNext({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) {
-  return (
-    <PaginationLink
-      aria-label="Go to next page"
-      size="default"
-      className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
-      {...props}
-    >
-      <span className="hidden sm:block">Next</span>
-      <ChevronRightIcon />
-    </PaginationLink>
-  )
+}: React.ComponentProps<typeof PaginationNextBase>) {
+  // restyle: prepend overrides before `className`
+  return <PaginationNextBase className={cn(className)} {...props} />
 }
 
 function PaginationEllipsis({
   className,
   ...props
-}: React.ComponentProps<"span">) {
-  return (
-    <span
-      aria-hidden
-      data-slot="pagination-ellipsis"
-      className={cn("flex size-9 items-center justify-center", className)}
-      {...props}
-    >
-      <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
-    </span>
-  )
+}: React.ComponentProps<typeof PaginationEllipsisBase>) {
+  // restyle: prepend overrides before `className`
+  return <PaginationEllipsisBase className={cn(className)} {...props} />
 }
+
+export { PaginationItem } from "#components/shadcn-base/pagination"
 
 export {
   Pagination,
   PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
   PaginationEllipsis,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 }

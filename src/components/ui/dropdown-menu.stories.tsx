@@ -3,6 +3,7 @@ import { expect } from 'storybook/test'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -20,14 +21,13 @@ type Story = StoryObj
 export const Default: Story = {
   render: () => (
     <DropdownMenu defaultOpen>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">File actions</Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button variant="outline">File actions</Button>} />
       <DropdownMenuContent>
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Rename</DropdownMenuItem>
-        <DropdownMenuItem>Duplicate</DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem>Rename</DropdownMenuItem>
+          <DropdownMenuItem>Duplicate</DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
       </DropdownMenuContent>
@@ -38,14 +38,13 @@ export const Default: Story = {
 export const WithTrigger: Story = {
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">File actions</Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button variant="outline">File actions</Button>} />
       <DropdownMenuContent>
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Rename</DropdownMenuItem>
-        <DropdownMenuItem>Duplicate</DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem>Rename</DropdownMenuItem>
+          <DropdownMenuItem>Duplicate</DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
       </DropdownMenuContent>

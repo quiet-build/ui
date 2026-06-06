@@ -44,7 +44,7 @@ Disable Prev on the first page and Next on the last:
 
 ## Notes
 
-- Use `<PaginationLink asChild>` to render as a router link (`<Link>`) instead of a native `<a>`.
+- Use `<PaginationLink render={<Link />}>` to render as a router link (`<Link>`) instead of a native `<a>`.
 - For table data, prefer `<DataTable>` which manages pagination state for you.
 
 ## Related

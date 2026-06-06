@@ -171,25 +171,27 @@ function DatePickerTrigger({
 }: DatePickerTriggerProps) {
   const { value, placeholder, disabled: ctxDisabled, format } = useDatePicker()
   return (
-    <PopoverTrigger asChild>
-      <Button
-        {...props}
-        type="button"
-        variant={variant ?? "outline"}
-        size={size ?? "default"}
-        disabled={ctxDisabled || disabled}
-        data-slot="date-picker-trigger"
-        data-empty={!value || undefined}
-        className={cn(
-          "justify-start text-left font-normal",
-          !value && "text-muted-foreground",
-          className,
-        )}
-      >
-        <CalendarIcon className="size-4" aria-hidden />
-        {children ?? (value ? format(value) : placeholder)}
-      </Button>
-    </PopoverTrigger>
+    <PopoverTrigger
+      render={
+        <Button
+          {...props}
+          type="button"
+          variant={variant ?? "outline"}
+          size={size ?? "default"}
+          disabled={ctxDisabled || disabled}
+          data-slot="date-picker-trigger"
+          data-empty={!value || undefined}
+          className={cn(
+            "justify-start text-left font-normal",
+            !value && "text-muted-foreground",
+            className,
+          )}
+        >
+          <CalendarIcon className="size-4" aria-hidden />
+          {children ?? (value ? format(value) : placeholder)}
+        </Button>
+      }
+    />
   )
 }
 

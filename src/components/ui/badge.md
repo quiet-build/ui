@@ -13,7 +13,7 @@ import { Badge } from '@quietbuildlab/ui'
 ```tsx
 interface BadgeProps extends React.ComponentProps<"span"> {
   variant?: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
-  asChild?: boolean
+  render?: React.ReactElement | ((props, state) => React.ReactElement)
 }
 ```
 
@@ -28,7 +28,7 @@ interface BadgeProps extends React.ComponentProps<"span"> {
 ## Notes
 
 - Use semantic tokens, not raw colors — `variant="destructive"` re-themes automatically.
-- For interactive variants (e.g. removable tags), wrap a Button or use `asChild`.
+- For interactive variants (e.g. removable tags), wrap a Button or use the `render` prop.
 
 ## Related
 

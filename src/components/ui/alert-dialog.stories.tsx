@@ -23,9 +23,7 @@ type Story = StoryObj<typeof AlertDialog>
 export const Default: Story = {
   render: () => (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive">Delete project</Button>
-      </AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button variant="destructive">Delete project</Button>} />
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete this project?</AlertDialogTitle>

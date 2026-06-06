@@ -10,7 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@quietbuildlab/ui'
 
 ## Props
 
-All three components forward to Radix Avatar primitives:
+All three components forward to Base UI Avatar primitives:
 - `Avatar`: outer container (size via `className`, default `size-8` / 32px)
 - `AvatarImage`: `src`, `alt`, plus standard `<img>` attrs
 - `AvatarFallback`: rendered when image isn't available

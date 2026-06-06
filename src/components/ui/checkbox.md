@@ -10,9 +10,10 @@ import { Checkbox } from '@quietbuildlab/ui'
 
 ## Props
 
-`React.ComponentProps<typeof CheckboxPrimitive.Root>` — wraps Radix Checkbox. Key props:
-- `checked` / `defaultChecked`: `boolean | "indeterminate"`
-- `onCheckedChange(checked)`
+`React.ComponentProps<typeof CheckboxPrimitive.Root>` — wraps Base UI Checkbox. Key props:
+- `checked` / `defaultChecked`: `boolean`
+- `indeterminate`: `boolean` (mixed state)
+- `onCheckedChange(checked: boolean)`
 - `disabled`, `required`, `name`, `value`
 
 ## Usage
@@ -30,12 +31,12 @@ Controlled:
 
 ```tsx
 const [accepted, setAccepted] = useState(false)
-<Checkbox checked={accepted} onCheckedChange={(v) => setAccepted(v === true)} />
+<Checkbox checked={accepted} onCheckedChange={setAccepted} />
 ```
 
 ## Notes
 
-- `onCheckedChange` receives `boolean | "indeterminate"` — narrow with `=== true` for boolean state.
+- `onCheckedChange` receives a `boolean`. For a mixed state use the separate `indeterminate` prop.
 - For grouped on/off choices, prefer `<Switch>` (preference) or `<RadioGroup>` (single-choice).
 
 ## Related

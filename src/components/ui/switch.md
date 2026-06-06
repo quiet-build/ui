@@ -10,7 +10,7 @@ import { Switch } from '@quietbuildlab/ui'
 
 ## Props
 
-`React.ComponentProps<typeof SwitchPrimitive.Root>` — wraps Radix Switch. Key props:
+`React.ComponentProps<typeof SwitchPrimitive.Root>` — wraps Base UI Switch. Key props:
 - `checked` / `defaultChecked`: `boolean`
 - `onCheckedChange(checked: boolean)`
 - `disabled`, `name`, `value`

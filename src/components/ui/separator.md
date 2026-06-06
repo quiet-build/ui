@@ -10,9 +10,8 @@ import { Separator } from '@quietbuildlab/ui'
 
 ## Props
 
-`React.ComponentProps<typeof SeparatorPrimitive.Root>` — wraps Radix Separator. Key props:
+`React.ComponentProps<typeof SeparatorPrimitive>` — wraps Base UI Separator. Key props:
 - `orientation?: "horizontal" | "vertical"` (default `"horizontal"`)
-- `decorative?: boolean` — `true` (default) hides from screen readers
 
 ## Usage
 
@@ -33,7 +32,7 @@ A vertical separator needs an explicit height since it stretches to its containe
 
 ## Notes
 
-- Set `decorative={false}` only when the separator carries meaning (e.g. distinguishing two unrelated sections); otherwise the default `true` is correct.
+- Base UI separators are decorative (`role="separator"`, hidden from the accessibility tree); there is no `decorative` prop to toggle.
 
 ## Related
 

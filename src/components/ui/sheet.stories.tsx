@@ -22,9 +22,7 @@ type Story = StoryObj<typeof Sheet>
 export const Right: Story = {
   render: () => (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button>Open right</Button>
-      </SheetTrigger>
+      <SheetTrigger render={<Button>Open right</Button>} />
       <SheetContent side="right">
         <SheetHeader>
           <SheetTitle>Edit profile</SheetTitle>
@@ -34,9 +32,7 @@ export const Right: Story = {
           Sheet body. Put a form or anything else here.
         </div>
         <SheetFooter>
-          <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </SheetClose>
+          <SheetClose render={<Button variant="outline">Cancel</Button>} />
           <Button>Save</Button>
         </SheetFooter>
       </SheetContent>
@@ -47,9 +43,7 @@ export const Right: Story = {
 export const Left: Story = {
   render: () => (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Open menu</Button>
-      </SheetTrigger>
+      <SheetTrigger render={<Button variant="outline">Open menu</Button>} />
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>Navigation</SheetTitle>
@@ -68,9 +62,7 @@ export const Left: Story = {
 export const Bottom: Story = {
   render: () => (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button>Open bottom</Button>
-      </SheetTrigger>
+      <SheetTrigger render={<Button>Open bottom</Button>} />
       <SheetContent side="bottom">
         <SheetHeader>
           <SheetTitle>Quick actions</SheetTitle>

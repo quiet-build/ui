@@ -311,7 +311,7 @@ function FilePickerInput({
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * Trigger — forwards Button's variant/size/asChild
+ * Trigger — forwards Button's variant/size/render
  * ─────────────────────────────────────────────────────────────────────── */
 
 type FilePickerTriggerProps = React.ComponentProps<typeof Button>

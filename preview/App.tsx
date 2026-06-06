@@ -96,7 +96,7 @@ export function App() {
 
           <Section title="Overlays">
             <Dialog>
-              <DialogTrigger asChild><Button>Open dialog</Button></DialogTrigger>
+              <DialogTrigger render={<Button>Open dialog</Button>} />
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Rename file</DialogTitle>
@@ -106,7 +106,7 @@ export function App() {
               </DialogContent>
             </Dialog>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild><Button variant="outline">Menu</Button></DropdownMenuTrigger>
+              <DropdownMenuTrigger render={<Button variant="outline">Menu</Button>} />
               <DropdownMenuContent>
                 <DropdownMenuItem>Rename</DropdownMenuItem>
                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
@@ -115,7 +115,7 @@ export function App() {
               </DropdownMenuContent>
             </DropdownMenu>
             <Tooltip>
-              <TooltipTrigger asChild><Button variant="ghost">Hover me</Button></TooltipTrigger>
+              <TooltipTrigger render={<Button variant="ghost">Hover me</Button>} />
               <TooltipContent>A helpful hint</TooltipContent>
             </Tooltip>
           </Section>
@@ -130,9 +130,7 @@ export function App() {
             <div className="flex items-start gap-3">
               <DatePicker placeholder="Pick a date" />
               <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">Popover</Button>
-                </PopoverTrigger>
+                <PopoverTrigger render={<Button variant="outline">Popover</Button>} />
                 <PopoverContent className="w-56">
                   <p className="text-sm">Anchored content goes here.</p>
                 </PopoverContent>

@@ -1,82 +1,42 @@
 import * as React from "react"
-import { ChevronDownIcon } from "lucide-react"
-import { Accordion as AccordionPrimitive } from "radix-ui"
-
+import {
+  Accordion as AccordionBase,
+  AccordionItem as AccordionItemBase,
+  AccordionTrigger as AccordionTriggerBase,
+  AccordionContent as AccordionContentBase,
+} from "#components/shadcn-base/accordion"
 import { cn } from "#lib/utils"
 
-/**
- * Vertical stack of collapsible sections. Defaults to single-open
- * (`type="single"`) but pass `type="multiple"` to allow several at once.
- *
- * Compose with `AccordionItem`, `AccordionTrigger`, and `AccordionContent`.
- *
- * @example
- * <Accordion type="single" collapsible>
- *   <AccordionItem value="a">
- *     <AccordionTrigger>How does billing work?</AccordionTrigger>
- *     <AccordionContent>Monthly, billed in advance.</AccordionContent>
- *   </AccordionItem>
- *   <AccordionItem value="b">
- *     <AccordionTrigger>Can I cancel?</AccordionTrigger>
- *     <AccordionContent>Yes, anytime.</AccordionContent>
- *   </AccordionItem>
- * </Accordion>
- */
 function Accordion({
+  className,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />
+}: React.ComponentProps<typeof AccordionBase>) {
+  // restyle: prepend overrides before `className`
+  return <AccordionBase className={cn(className)} {...props} />
 }
 
 function AccordionItem({
   className,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
-  return (
-    <AccordionPrimitive.Item
-      data-slot="accordion-item"
-      className={cn("border-b last:border-b-0", className)}
-      {...props}
-    />
-  )
+}: React.ComponentProps<typeof AccordionItemBase>) {
+  // restyle: prepend overrides before `className`
+  return <AccordionItemBase className={cn(className)} {...props} />
 }
 
 function AccordionTrigger({
   className,
-  children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
-  return (
-    <AccordionPrimitive.Header className="flex">
-      <AccordionPrimitive.Trigger
-        data-slot="accordion-trigger"
-        className={cn(
-          "focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-        <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
-      </AccordionPrimitive.Trigger>
-    </AccordionPrimitive.Header>
-  )
+}: React.ComponentProps<typeof AccordionTriggerBase>) {
+  // restyle: prepend overrides before `className`
+  return <AccordionTriggerBase className={cn(className)} {...props} />
 }
 
 function AccordionContent({
   className,
-  children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
-  return (
-    <AccordionPrimitive.Content
-      data-slot="accordion-content"
-      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
-      {...props}
-    >
-      <div className={cn("pt-0 pb-4", className)}>{children}</div>
-    </AccordionPrimitive.Content>
-  )
+}: React.ComponentProps<typeof AccordionContentBase>) {
+  // restyle: prepend overrides before `className`
+  return <AccordionContentBase className={cn(className)} {...props} />
 }
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }

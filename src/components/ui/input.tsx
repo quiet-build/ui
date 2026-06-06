@@ -1,31 +1,11 @@
 import * as React from "react"
+import { Input as InputBase } from "#components/shadcn-base/input"
 
 import { cn } from "#lib/utils"
 
-/**
- * Themed text input. Forwards all standard `<input>` props. Use `type` for
- * `text` (default) | `email` | `password` | `number` | `search` | `url` etc.
- * Pair with a `<Label htmlFor>` for accessibility. Use `aria-invalid` to
- * surface validation errors via the destructive ring.
- *
- * @example
- * <Input type="email" placeholder="you@example.com" />
- * <Input aria-invalid={hasError || undefined} />
- */
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
-  return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30",
-        "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        "aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
-        className
-      )}
-      {...props}
-    />
-  )
+function Input({ className, ...props }: React.ComponentProps<typeof InputBase>) {
+  // restyle: prepend overrides before `className`
+  return <InputBase className={cn(className)} {...props} />
 }
 
 export { Input }

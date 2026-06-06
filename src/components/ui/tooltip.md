@@ -10,11 +10,11 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@quiet
 
 ## Props
 
-**TooltipProvider**: `delayDuration` (default 0), `skipDelayDuration`, `disableHoverableContent`.
+**TooltipProvider**: `delay` (default 0), `closeDelay`, `timeout`.
 
-**Tooltip**: `open`, `defaultOpen`, `onOpenChange`, `delayDuration`, `disableHoverableContent`.
+**Tooltip**: `open`, `defaultOpen`, `onOpenChange`, `delay`, `closeDelay`.
 
-**TooltipContent**: `side`, `align`, `sideOffset` (default 0), `alignOffset`, `avoidCollisions`.
+**TooltipContent**: `side`, `align`, `sideOffset` (default 0), `alignOffset` (Base UI Positioner props), plus Popup props.
 
 ## Usage
 
@@ -30,11 +30,13 @@ Then wherever you need a tooltip:
 
 ```tsx
 <Tooltip>
-  <TooltipTrigger asChild>
-    <Button variant="ghost" size="icon" aria-label="Copy">
-      <CopyIcon />
-    </Button>
-  </TooltipTrigger>
+  <TooltipTrigger
+    render={
+      <Button variant="ghost" size="icon" aria-label="Copy">
+        <CopyIcon />
+      </Button>
+    }
+  />
   <TooltipContent>Copy to clipboard</TooltipContent>
 </Tooltip>
 ```

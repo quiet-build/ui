@@ -12,9 +12,7 @@ type Story = StoryObj
 export const Default: Story = {
   render: () => (
     <Tooltip defaultOpen>
-      <TooltipTrigger asChild>
-        <Button variant="ghost">Hover me</Button>
-      </TooltipTrigger>
+      <TooltipTrigger render={<Button variant="ghost">Hover me</Button>} />
       <TooltipContent>A helpful hint</TooltipContent>
     </Tooltip>
   ),
@@ -23,9 +21,7 @@ export const Default: Story = {
 export const WithDelay: Story = {
   render: () => (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost">Hover me</Button>
-      </TooltipTrigger>
+      <TooltipTrigger render={<Button variant="ghost">Hover me</Button>} />
       <TooltipContent>A helpful hint</TooltipContent>
     </Tooltip>
   ),

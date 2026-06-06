@@ -11,11 +11,13 @@ function ConfirmExample() {
     <div className="flex items-center gap-3">
       <span className="text-sm">{count} items</span>
       <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="destructive" disabled={count === 0}>
-            Delete all
-          </Button>
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <Button variant="destructive" disabled={count === 0}>
+              Delete all
+            </Button>
+          }
+        />
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete all items?</DialogTitle>
@@ -24,14 +26,14 @@ function ConfirmExample() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <DialogClose asChild>
-              <Button variant="destructive" onClick={() => setCount(0)}>
-                Yes, delete all
-              </Button>
-            </DialogClose>
+            <DialogClose render={<Button variant="outline">Cancel</Button>} />
+            <DialogClose
+              render={
+                <Button variant="destructive" onClick={() => setCount(0)}>
+                  Yes, delete all
+                </Button>
+              }
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -47,7 +49,7 @@ const meta: Meta<typeof ConfirmExample> = {
     docs: {
       description: {
         component:
-          'Standard destructive-confirm pattern. The trigger uses `variant="destructive"` to telegraph intent; both Cancel and confirm wrap in `<DialogClose asChild>` so clicking either closes the dialog. The actual destructive work is done in the confirm button\'s `onClick`.',
+          'Standard destructive-confirm pattern. The trigger uses `variant="destructive"` to telegraph intent; both Cancel and confirm use `<DialogClose render={<Button/>} />` so clicking either closes the dialog. The actual destructive work is done in the confirm button\'s `onClick`.',
       },
     },
   },

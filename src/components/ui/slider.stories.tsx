@@ -25,7 +25,13 @@ export const Controlled: Story = {
     return (
       <div className="w-72 space-y-3">
         <Label>Volume: {v[0]}</Label>
-        <Slider value={v} onValueChange={setV} min={0} max={100} step={1} />
+        <Slider
+          value={v}
+          onValueChange={(val) => setV(val as number[])}
+          min={0}
+          max={100}
+          step={1}
+        />
       </div>
     )
   },
@@ -39,7 +45,13 @@ export const Range: Story = {
         <Label>
           Price: ${v[0]} – ${v[1]}
         </Label>
-        <Slider value={v} onValueChange={setV} min={0} max={100} step={5} />
+        <Slider
+          value={v}
+          onValueChange={(val) => setV(val as number[])}
+          min={0}
+          max={100}
+          step={5}
+        />
       </div>
     )
   },

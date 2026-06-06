@@ -5,24 +5,20 @@ Anchored non-modal overlay. Content portals to `document.body`. Doesn't trap foc
 ## Import
 
 ```tsx
-import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from '@quietbuildlab/ui'
+import { Popover, PopoverTrigger, PopoverContent } from '@quietbuildlab/ui'
 ```
 
 ## Props
 
-**Popover** (Radix Root): `open`, `defaultOpen`, `onOpenChange`, `modal`.
+**Popover** (Base UI Root): `open`, `defaultOpen`, `onOpenChange`, `modal`.
 
-**PopoverContent**: `side`, `align`, `sideOffset`, `alignOffset`, `avoidCollisions`, `collisionPadding`, etc. (Radix Content props).
-
-**PopoverAnchor** (optional): use to anchor the popover to an element *other* than the trigger.
+**PopoverContent**: `side`, `align`, `sideOffset`, `alignOffset` (Base UI Positioner props), plus Popup props. To anchor the popover to an element *other* than the trigger, pass an `anchor` prop (handled by the Positioner).
 
 ## Usage
 
 ```tsx
 <Popover>
-  <PopoverTrigger asChild>
-    <Button variant="outline">Open</Button>
-  </PopoverTrigger>
+  <PopoverTrigger render={<Button variant="outline">Open</Button>} />
   <PopoverContent className="w-80">
     <p className="text-sm">Anchored, non-modal content.</p>
   </PopoverContent>

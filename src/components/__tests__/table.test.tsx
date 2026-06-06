@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -111,18 +112,20 @@ describe('DataTable rows-per-page selector', () => {
     // 10 rows visible initially
     expect(container.querySelectorAll('tbody tr').length).toBe(10)
     // Open the rows-per-page selector and choose 25.
-    // Radix Select opens on keyDown Space/Enter; listbox renders into a portal.
+    // Base UI Select opens on click; listbox/options render into a portal.
+    const user = userEvent.setup()
     const trigger = screen.getByRole('combobox')
-    fireEvent.keyDown(trigger, { key: 'Enter' })
+    await user.click(trigger)
     const option25 = await screen.findByRole('option', { name: '25' })
-    fireEvent.click(option25)
+    await user.click(option25)
     expect(container.querySelectorAll('tbody tr').length).toBe(25)
   })
 
   it('respects custom pageSizeOptions', async () => {
     render(<DataTable columns={columns} data={rows} pageSize={5} pageSizeOptions={[5, 15]} />)
+    const user = userEvent.setup()
     const trigger = screen.getByRole('combobox')
-    fireEvent.keyDown(trigger, { key: 'Enter' })
+    await user.click(trigger)
     expect(await screen.findByRole('option', { name: '5' })).toBeInTheDocument()
     expect(await screen.findByRole('option', { name: '15' })).toBeInTheDocument()
     expect(screen.queryByRole('option', { name: '10' })).not.toBeInTheDocument()
@@ -140,9 +143,10 @@ describe('DataTable rows-per-page selector', () => {
         onPaginationChange={fn}
       />,
     )
+    const user = userEvent.setup()
     const trigger = screen.getByRole('combobox')
-    fireEvent.keyDown(trigger, { key: 'Enter' })
-    fireEvent.click(await screen.findByRole('option', { name: '25' }))
+    await user.click(trigger)
+    await user.click(await screen.findByRole('option', { name: '25' }))
     expect(fn).toHaveBeenCalled()
     const lastCall = fn.mock.calls[fn.mock.calls.length - 1][0]
     expect(lastCall.pageSize).toBe(25)

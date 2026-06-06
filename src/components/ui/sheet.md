@@ -1,6 +1,6 @@
 # Sheet
 
-Slide-in panel anchored to an edge of the viewport. Built on Radix Dialog, so it traps focus and supports `<SheetTrigger asChild>` like `<Dialog>` does.
+Slide-in panel anchored to an edge of the viewport. Built on Base UI Dialog, so it traps focus and supports `<SheetTrigger render={…} />` like `<Dialog>` does.
 
 ## Import
 
@@ -22,9 +22,7 @@ Other props match the equivalent Dialog primitives (`open`, `defaultOpen`, `onOp
 
 ```tsx
 <Sheet>
-  <SheetTrigger asChild>
-    <Button>Open menu</Button>
-  </SheetTrigger>
+  <SheetTrigger render={<Button>Open menu</Button>} />
   <SheetContent side="left">
     <SheetHeader>
       <SheetTitle>Menu</SheetTitle>
@@ -36,7 +34,7 @@ Other props match the equivalent Dialog primitives (`open`, `defaultOpen`, `onOp
       <a className="rounded-md px-3 py-2 hover:bg-accent">Settings</a>
     </nav>
     <SheetFooter>
-      <SheetClose asChild><Button variant="outline">Close</Button></SheetClose>
+      <SheetClose render={<Button variant="outline">Close</Button>} />
     </SheetFooter>
   </SheetContent>
 </Sheet>

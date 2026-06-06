@@ -24,9 +24,7 @@ type Story = StoryObj
 export const Default: Story = {
   render: () => (
     <Dialog defaultOpen>
-      <DialogTrigger asChild>
-        <Button variant="outline">Rename file</Button>
-      </DialogTrigger>
+      <DialogTrigger render={<Button variant="outline">Rename file</Button>} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Rename file</DialogTitle>
@@ -37,9 +35,7 @@ export const Default: Story = {
           <Input id="filename" defaultValue="untitled.txt" />
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant="outline">Cancel</Button>} />
           <Button>Save</Button>
         </DialogFooter>
       </DialogContent>
@@ -50,9 +46,7 @@ export const Default: Story = {
 export const WithTrigger: Story = {
   render: () => (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">Open dialog</Button>
-      </DialogTrigger>
+      <DialogTrigger render={<Button variant="outline">Open dialog</Button>} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Rename file</DialogTitle>
@@ -63,9 +57,7 @@ export const WithTrigger: Story = {
           <Input id="filename2" defaultValue="untitled.txt" />
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant="outline">Cancel</Button>} />
           <Button>Save</Button>
         </DialogFooter>
       </DialogContent>

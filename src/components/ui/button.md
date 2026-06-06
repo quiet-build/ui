@@ -1,6 +1,6 @@
 # Button
 
-Themed action button. Built on a native `<button>` element, or any other element via Radix `Slot` when `asChild` is true.
+Themed action button. Built on a native `<button>` element, or any other element via Base UI's `render` prop.
 
 ## Import
 
@@ -14,7 +14,7 @@ import { Button } from '@quietbuildlab/ui'
 interface ButtonProps extends React.ComponentProps<"button"> {
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive" | "link"
   size?: "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg"
-  asChild?: boolean
+  render?: React.ReactElement | ((props, state) => React.ReactElement)
 }
 ```
 
@@ -25,9 +25,7 @@ interface ButtonProps extends React.ComponentProps<"button"> {
 <Button variant="destructive" size="sm">Delete</Button>
 
 // Polymorphic — renders as <a> with button styling.
-<Button asChild>
-  <a href="/dashboard">Go to dashboard</a>
-</Button>
+<Button render={<a href="/dashboard">Go to dashboard</a>} />
 
 // Icon-only — provide an `aria-label`.
 <Button variant="outline" size="icon" aria-label="Settings">
@@ -37,7 +35,7 @@ interface ButtonProps extends React.ComponentProps<"button"> {
 
 ## Notes
 
-- Don't nest `<a>`/`<Link>` inside `<button>` — use `asChild` instead.
+- Don't nest `<a>`/`<Link>` inside `<button>` — use the `render` prop instead.
 - For destructive *confirmations*, pair with `<AlertDialog>` rather than firing the action immediately.
 
 ## Related

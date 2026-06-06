@@ -1,6 +1,6 @@
 # AlertDialog
 
-Blocking yes/no confirmation modal. Use for destructive or important actions (delete, sign-out, discard changes). Built on Radix AlertDialog.
+Blocking yes/no confirmation modal. Use for destructive or important actions (delete, sign-out, discard changes). Built on Base UI AlertDialog.
 
 For inline non-blocking messages, use `<Alert>`. For general modal content (forms, info), use `<Dialog>`.
 
@@ -25,9 +25,7 @@ Both override styles via `className`.
 
 ```tsx
 <AlertDialog>
-  <AlertDialogTrigger asChild>
-    <Button variant="destructive">Delete project</Button>
-  </AlertDialogTrigger>
+  <AlertDialogTrigger render={<Button variant="destructive">Delete project</Button>} />
   <AlertDialogContent>
     <AlertDialogHeader>
       <AlertDialogTitle>Delete this project?</AlertDialogTitle>

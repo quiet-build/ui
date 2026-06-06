@@ -11,7 +11,7 @@ type Story = StoryObj<typeof Accordion>
 
 export const Default: Story = {
   render: () => (
-    <Accordion type="single" collapsible className="w-96">
+    <Accordion className="w-96">
       <AccordionItem value="a">
         <AccordionTrigger>How does billing work?</AccordionTrigger>
         <AccordionContent>
@@ -36,7 +36,7 @@ export const Default: Story = {
 
 export const Multiple: Story = {
   render: () => (
-    <Accordion type="multiple" className="w-96">
+    <Accordion multiple className="w-96">
       <AccordionItem value="a">
         <AccordionTrigger>Section one</AccordionTrigger>
         <AccordionContent>Open multiple at once.</AccordionContent>

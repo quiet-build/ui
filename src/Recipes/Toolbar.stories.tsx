@@ -9,28 +9,20 @@ function ToolbarExample() {
   return (
     <div className="border rounded-md p-1.5 inline-flex items-center gap-1">
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="sm">Bold</Button>
-        </TooltipTrigger>
+        <TooltipTrigger render={<Button variant="ghost" size="sm">Bold</Button>} />
         <TooltipContent>Bold (⌘B)</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="sm">Italic</Button>
-        </TooltipTrigger>
+        <TooltipTrigger render={<Button variant="ghost" size="sm">Italic</Button>} />
         <TooltipContent>Italic (⌘I)</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="sm">Link</Button>
-        </TooltipTrigger>
+        <TooltipTrigger render={<Button variant="ghost" size="sm">Link</Button>} />
         <TooltipContent>Insert link (⌘K)</TooltipContent>
       </Tooltip>
       <Separator orientation="vertical" className="mx-1 h-6" />
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">Insert ▾</Button>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger render={<Button variant="ghost" size="sm">Insert ▾</Button>} />
         <DropdownMenuContent>
           <DropdownMenuItem>Image</DropdownMenuItem>
           <DropdownMenuItem>Table</DropdownMenuItem>

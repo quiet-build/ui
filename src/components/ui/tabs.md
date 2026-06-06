@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@quietbuildlab/ui'
 
 ## Props
 
-**Tabs** (Radix Root): `value`, `defaultValue`, `onValueChange`, `orientation` (`"horizontal" | "vertical"`), `dir`, `activationMode`.
+**Tabs** (Base UI Root): `value`, `defaultValue`, `onValueChange`, `orientation` (`"horizontal" | "vertical"`).
 
 **TabsList** extra prop: `variant?: "default" | "line"`.
 

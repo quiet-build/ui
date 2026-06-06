@@ -12,7 +12,7 @@ import { Slider } from '@quietbuildlab/ui'
 
 ```tsx
 interface SliderProps extends React.ComponentProps<typeof SliderPrimitive.Root> {
-  // Forwards everything to Radix Slider. Useful props:
+  // Forwards everything to Base UI Slider. Useful props:
   // min, max, step, defaultValue, value, onValueChange, disabled, orientation
 
   /**

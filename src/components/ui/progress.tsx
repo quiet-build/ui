@@ -1,29 +1,60 @@
+"use client"
+
 import * as React from "react"
-import { Progress as ProgressPrimitive } from "radix-ui"
+import {
+  Progress as ProgressBase,
+  ProgressTrack as ProgressTrackBase,
+  ProgressIndicator as ProgressIndicatorBase,
+  ProgressLabel as ProgressLabelBase,
+  ProgressValue as ProgressValueBase,
+} from "#components/shadcn-base/progress"
 
 import { cn } from "#lib/utils"
 
 function Progress({
   className,
-  value,
   ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
-  return (
-    <ProgressPrimitive.Root
-      data-slot="progress"
-      className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
-        className
-      )}
-      {...props}
-    >
-      <ProgressPrimitive.Indicator
-        data-slot="progress-indicator"
-        className="h-full w-full flex-1 bg-primary transition-all"
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-      />
-    </ProgressPrimitive.Root>
-  )
+}: React.ComponentProps<typeof ProgressBase>) {
+  // restyle: prepend overrides before `className`
+  return <ProgressBase className={cn(className)} {...props} />
 }
 
-export { Progress }
+function ProgressTrack({
+  className,
+  ...props
+}: React.ComponentProps<typeof ProgressTrackBase>) {
+  // restyle: prepend overrides before `className`
+  return <ProgressTrackBase className={cn(className)} {...props} />
+}
+
+function ProgressIndicator({
+  className,
+  ...props
+}: React.ComponentProps<typeof ProgressIndicatorBase>) {
+  // restyle: prepend overrides before `className`
+  return <ProgressIndicatorBase className={cn(className)} {...props} />
+}
+
+function ProgressLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof ProgressLabelBase>) {
+  // restyle: prepend overrides before `className`
+  return <ProgressLabelBase className={cn(className)} {...props} />
+}
+
+function ProgressValue({
+  className,
+  ...props
+}: React.ComponentProps<typeof ProgressValueBase>) {
+  // restyle: prepend overrides before `className`
+  return <ProgressValueBase className={cn(className)} {...props} />
+}
+
+export {
+  Progress,
+  ProgressTrack,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressValue,
+}

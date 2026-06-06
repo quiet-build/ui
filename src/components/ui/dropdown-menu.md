@@ -7,31 +7,31 @@ Contextual menu. Content portals to `document.body`.
 ```tsx
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
-  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
+  DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@quietbuildlab/ui'
 ```
 
 ## Props
 
-**DropdownMenu** (Radix Root): `open`, `defaultOpen`, `onOpenChange`, `dir`, `modal`.
+**DropdownMenu** (Base UI Menu Root): `open`, `defaultOpen`, `onOpenChange`, `modal`.
 
-**DropdownMenuContent**: `side`, `align`, `sideOffset`, `alignOffset`, etc. (Radix Content props).
+**DropdownMenuContent**: `side`, `align`, `sideOffset`, `alignOffset`, etc. (Base UI Positioner props).
 
-**DropdownMenuItem**: `onSelect`, `disabled`, `textValue`, `inset`.
+**DropdownMenuItem**: `onClick`, `disabled`, `inset`.
 
 ## Usage
 
 ```tsx
 <DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="outline">Actions</Button>
-  </DropdownMenuTrigger>
+  <DropdownMenuTrigger render={<Button variant="outline">Actions</Button>} />
   <DropdownMenuContent align="end">
-    <DropdownMenuLabel>Account</DropdownMenuLabel>
-    <DropdownMenuItem onSelect={() => goToProfile()}>Profile</DropdownMenuItem>
-    <DropdownMenuItem onSelect={() => goToSettings()}>Settings</DropdownMenuItem>
+    <DropdownMenuGroup>
+      <DropdownMenuLabel>Account</DropdownMenuLabel>
+      <DropdownMenuItem onClick={() => goToProfile()}>Profile</DropdownMenuItem>
+      <DropdownMenuItem onClick={() => goToSettings()}>Settings</DropdownMenuItem>
+    </DropdownMenuGroup>
     <DropdownMenuSeparator />
-    <DropdownMenuItem className="text-destructive" onSelect={signOut}>Sign out</DropdownMenuItem>
+    <DropdownMenuItem className="text-destructive" onClick={signOut}>Sign out</DropdownMenuItem>
   </DropdownMenuContent>
 </DropdownMenu>
 ```
@@ -39,7 +39,7 @@ import {
 ## Notes
 
 - Portals to `document.body` — style content via `className` on `DropdownMenuContent`.
-- For confirming the destructive items (e.g. Sign out), open an `<AlertDialog>` from the `onSelect` handler.
+- For confirming the destructive items (e.g. Sign out), open an `<AlertDialog>` from the `onClick` handler.
 - For one-of-many selection inside a form, use `<Select>` instead.
 
 ## Related
