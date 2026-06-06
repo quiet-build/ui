@@ -13,6 +13,8 @@ import {
 import { Loader2 } from 'lucide-react'
 
 import { cn } from '#lib/utils'
+import { useControllableState } from '#hooks/use-controllable-state'
+import { paginationView } from '#lib/pagination-view'
 import {
   Table,
   TableBody,
@@ -124,21 +126,15 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const isServerSide = pageCount !== undefined
 
-  const [internalPagination, setInternalPagination] = React.useState<PaginationState>({
-    pageIndex: 0,
-    pageSize,
+  const [pagination, setPagination] = useControllableState<PaginationState>({
+    value: isServerSide ? { pageIndex: pageIndex ?? 0, pageSize } : undefined,
+    defaultValue: { pageIndex: 0, pageSize },
+    onChange: onPaginationChange,
   })
-
-  const pagination: PaginationState = isServerSide
-    ? { pageIndex: pageIndex ?? 0, pageSize }
-    : internalPagination
 
   const handlePaginationChange: OnChangeFn<PaginationState> = (updater) => {
     const next = typeof updater === 'function' ? updater(pagination) : updater
-    if (!isServerSide) {
-      setInternalPagination(next)
-    }
-    onPaginationChange?.(next)
+    setPagination(next)
   }
 
   const table = useReactTable({
@@ -153,8 +149,10 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   })
 
-  const totalPages = Math.max(table.getPageCount(), 1)
-  const currentPage = pagination.pageIndex + 1
+  const { currentPage, totalPages, prevLabel, nextLabel } = paginationView({
+    pageIndex: pagination.pageIndex,
+    pageCount: table.getPageCount(),
+  })
   const rowsPerPageId = React.useId()
 
   return (
@@ -240,7 +238,7 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => table.previousPage()}
               disabled={loading || !table.getCanPreviousPage()}
-              aria-label={`Go to previous page, page ${Math.max(currentPage - 1, 1)}`}
+              aria-label={prevLabel}
             >
               Previous
             </Button>
@@ -249,7 +247,7 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => table.nextPage()}
               disabled={loading || !table.getCanNextPage()}
-              aria-label={`Go to next page, page ${Math.min(currentPage + 1, totalPages)}`}
+              aria-label={nextLabel}
             >
               Next
             </Button>

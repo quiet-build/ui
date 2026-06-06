@@ -3,16 +3,10 @@ import { File as FileIcon, Image as ImageIcon, UploadCloud, X } from "lucide-rea
 
 import { Button } from "#components/ui/button"
 import { cn } from "#lib/utils"
+import { useControllableState } from "#hooks/use-controllable-state"
+import { selectFiles, type FilePickerErrorReason } from "#lib/file-selection"
 
-/**
- * Reasons a file may be rejected from a FilePicker selection. Surfaced via
- * the `onError(reason, file?)` callback so consumers can render their own
- * validation messaging.
- */
-export type FilePickerErrorReason =
-  | "file-too-large"
-  | "too-many-files"
-  | "invalid-type"
+export type { FilePickerErrorReason }
 
 type FilePickerContextValue = {
   files: File[]
@@ -108,9 +102,11 @@ function FilePicker({
   children,
   className,
 }: FilePickerProps) {
-  const isControlled = value !== undefined
-  const [internal, setInternal] = React.useState<File[]>(defaultValue ?? [])
-  const files = isControlled ? value! : internal
+  const [files, setFiles] = useControllableState<File[]>({
+    value,
+    defaultValue: defaultValue ?? [],
+    onChange: onFilesChange,
+  })
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const [isDragActive, setDragActive] = React.useState(false)
   // Polite SR announcement when a file is removed. Auto-clears so successive
@@ -122,17 +118,14 @@ function FilePicker({
     return () => clearTimeout(id)
   }, [removedAnnouncement])
 
-  // Keep the latest handlers in refs so the context value identity stays
+  // Keep the latest onError in a ref so the context value identity stays
   // stable across renders unless `files` actually changes.
-  const onFilesChangeRef = React.useRef(onFilesChange)
   const onErrorRef = React.useRef(onError)
-  React.useEffect(() => { onFilesChangeRef.current = onFilesChange }, [onFilesChange])
   React.useEffect(() => { onErrorRef.current = onError }, [onError])
 
   const commit = React.useCallback(
     (next: File[]) => {
-      if (!isControlled) setInternal(next)
-      onFilesChangeRef.current?.(next)
+      setFiles(next)
       // Sync the hidden input's FileList so form submission and direct
       // `inputRef.current.files` reads reflect the live selection.
       if (inputRef.current) {
@@ -141,47 +134,21 @@ function FilePicker({
         inputRef.current.files = dt.files
       }
     },
-    [isControlled],
-  )
-
-  const validate = React.useCallback(
-    (file: File): FilePickerErrorReason | null => {
-      if (maxSize != null && file.size > maxSize) return "file-too-large"
-      if (accept) {
-        const tokens = accept.split(",").map((t) => t.trim().toLowerCase())
-        const okType = tokens.some((t) => {
-          if (t.endsWith("/*")) {
-            return file.type.toLowerCase().startsWith(t.slice(0, -1))
-          }
-          if (t.startsWith(".")) return file.name.toLowerCase().endsWith(t)
-          return file.type.toLowerCase() === t
-        })
-        if (!okType) return "invalid-type"
-      }
-      return null
-    },
-    [accept, maxSize],
+    [setFiles],
   )
 
   const addFiles = React.useCallback(
     (incoming: File[]) => {
-      const accepted: File[] = []
-      for (const f of incoming) {
-        const err = validate(f)
-        if (err) {
-          onErrorRef.current?.(err, f)
-          continue
-        }
-        accepted.push(f)
-      }
-      let next = multiple ? [...files, ...accepted] : accepted.slice(0, 1)
-      if (maxFiles != null && next.length > maxFiles) {
-        onErrorRef.current?.("too-many-files")
-        next = next.slice(0, maxFiles)
-      }
+      const { next, rejections } = selectFiles(files, incoming, {
+        accept,
+        multiple,
+        maxSize,
+        maxFiles,
+      })
+      for (const r of rejections) onErrorRef.current?.(r.reason, r.file)
       commit(next)
     },
-    [files, multiple, maxFiles, commit, validate],
+    [files, accept, multiple, maxSize, maxFiles, commit],
   )
 
   const removeFile = React.useCallback(

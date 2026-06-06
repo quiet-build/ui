@@ -9,6 +9,8 @@ import {
   PopoverTrigger,
 } from "#components/ui/popover"
 import { cn } from "#lib/utils"
+import { useControllableState } from "#hooks/use-controllable-state"
+import { toDisabledMatchers, resolveDateFormatter } from "#lib/date-bounds"
 
 /* ─────────────────────────────────────────────────────────────────────────
  * Context — shared by DatePicker root and its subcomponents
@@ -98,31 +100,22 @@ function DatePicker({
   format: formatProp,
   children,
 }: DatePickerProps) {
-  const isControlled = value !== undefined
-  const [internal, setInternal] = React.useState<Date | undefined>(defaultValue)
-  const current = isControlled ? value : internal
+  const [current, setValue] = useControllableState<Date | undefined>({
+    value,
+    defaultValue,
+    onChange: onValueChange,
+  })
   const [open, setOpen] = React.useState(false)
 
   // Stable default formatter using Intl.DateTimeFormat (zero dep).
-  const defaultFormatter = React.useMemo(() => {
-    try {
-      return new Intl.DateTimeFormat(locale, { dateStyle: "long" })
-    } catch {
-      return new Intl.DateTimeFormat(undefined, { dateStyle: "long" })
-    }
-  }, [locale])
+  const defaultFormatter = React.useMemo(
+    () => resolveDateFormatter(locale),
+    [locale],
+  )
 
   const format = React.useCallback(
     (d: Date) => (formatProp ? formatProp(d) : defaultFormatter.format(d)),
     [formatProp, defaultFormatter],
-  )
-
-  const setValue = React.useCallback(
-    (next: Date | undefined) => {
-      if (!isControlled) setInternal(next)
-      onValueChange?.(next)
-    },
-    [isControlled, onValueChange],
   )
 
   const close = React.useCallback(() => setOpen(false), [])
@@ -215,12 +208,10 @@ function DatePickerContent({
 }: DatePickerContentProps) {
   const { value, setValue, minDate, maxDate, close } = useDatePicker()
   // Build the v10 `disabled` matcher list from min/max bounds.
-  const disabledMatchers = React.useMemo(() => {
-    const arr: Array<{ before: Date } | { after: Date }> = []
-    if (minDate) arr.push({ before: minDate })
-    if (maxDate) arr.push({ after: maxDate })
-    return arr.length > 0 ? arr : undefined
-  }, [minDate, maxDate])
+  const disabledMatchers = React.useMemo(
+    () => toDisabledMatchers(minDate, maxDate),
+    [minDate, maxDate],
+  )
 
   return (
     <PopoverContent
