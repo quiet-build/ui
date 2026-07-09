@@ -176,9 +176,15 @@ return (
 
 If you're modifying source code in this repo (not just consuming the library in another project), one rule is load-bearing:
 
-**The per-component `.md` files in `src/components/ui/*.md` are part of the contract. They must stay in sync with the `.tsx` they sit beside.**
+**The companion `.md` files beside source files are part of the contract. They must stay in sync with the files they document.**
 
-Whenever a `.tsx` change touches anything a consumer would see — the prop shape, default values, sub-component exports, composition rules, accessibility requirements, or the canonical usage example — update the matching `.md` in the same commit. Treat the `.md` like a test that must be edited when behavior changes; don't ship the `.tsx` change without the doc change.
+For public components, the per-component docs in `src/components/ui/*.md` are the most important examples. Whenever a `.tsx` change touches anything a consumer would see — the prop shape, default values, sub-component exports, composition rules, accessibility requirements, or the canonical usage example — update the matching `.md` in the same commit. Treat the `.md` like a test that must be edited when behavior changes; don't ship the `.tsx` change without the doc change.
+
+The same rule applies outside components:
+- `src/hooks/*.md` documents shared hook contracts.
+- `src/lib/*.md` documents pure helper behavior and exported/internal boundaries.
+- `src/themes/*.md` documents theme entrypoints, runtime switching behavior, and preset identity.
+- `src/index.md` documents package-root exports.
 
 Concretely, you must update the doc when you:
 - Add, remove, or rename an exported component, sub-component, or helper.
@@ -191,7 +197,7 @@ You don't need to touch the `.md` for purely internal refactors (renaming a loca
 
 When in doubt: if the change would surprise a consumer who only reads the doc, update the doc.
 
-After updating the `.md`, also check if `llms.txt`, `llms-full.txt`, or any Storybook story needs the same update — those are downstream summaries of the per-component docs.
+After updating a public component `.md`, also check if `llms.txt`, `llms-full.txt`, or any Storybook story needs the same update — those are downstream summaries of the per-component docs. For internal helpers and theme entrypoints, update downstream summaries only when the public usage contract changes.
 
 ## Where to look for more
 
