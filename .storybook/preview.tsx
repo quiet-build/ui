@@ -14,7 +14,7 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
-    backgrounds: { disable: true }, // theme.css owns the canvas
+    backgrounds: { disabled: true }, // theme.css owns the canvas
     layout: 'centered',
   },
   globalTypes: {
