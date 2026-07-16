@@ -23,11 +23,11 @@ export const Default: Story = {
 export const Variants: Story = {
   render: () => (
     <>
-      <div className="flex gap-2">
-        <Button onClick={() => toast.success('File saved successfully.')}>Success</Button>
-        <Button onClick={() => toast.error('Failed to save file.')}>Error</Button>
-        <Button onClick={() => toast.warning('Disk space running low.')}>Warning</Button>
-        <Button onClick={() => toast.info('Auto-save is enabled.')}>Info</Button>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => toast.success('Changes saved')}>Success</Button>
+        <Button onClick={() => toast.error('Couldn’t save changes', { description: 'Check your connection and try again.' })}>Error</Button>
+        <Button onClick={() => toast.warning('Disk space running low')}>Warning</Button>
+        <Button onClick={() => toast.info('Auto-save is on')}>Info</Button>
       </div>
       <Toaster />
     </>

@@ -47,11 +47,11 @@ For C, set `document.documentElement.dataset.theme = "ocean"` to change theme; d
 All exported as named imports from the package root (`import { Button } from '@quietbuildlab/ui'`).
 
 - **Accordion** + **AccordionItem**, **AccordionTrigger**, **AccordionContent** — collapsible sections. `type="single" collapsible` or `type="multiple"`.
-- **Alert** + **AlertTitle**, **AlertDescription** — inline non-blocking status banner. Variants: default | destructive.
+- **Alert** + **AlertTitle**, **AlertDescription** — inline non-blocking status banner. Variants: default | destructive | success | warning | info.
 - **AlertDialog** + **AlertDialogTrigger**, **AlertDialogContent**, **AlertDialogHeader**, **AlertDialogTitle**, **AlertDialogDescription**, **AlertDialogFooter**, **AlertDialogAction**, **AlertDialogCancel** — blocking yes/no confirmation modal. Use for destructive actions.
 - **Avatar** + **AvatarImage**, **AvatarFallback** — user image with text fallback. Size via `className` (`size-6`, `size-10`, etc.).
 - **Button** — variants: default, secondary, outline, ghost, destructive, link. Sizes: default, sm, lg, icon. Supports `asChild` (Radix Slot).
-- **Badge** — variants: default, secondary, destructive, outline.
+- **Badge** — variants: default, secondary, destructive, success, warning, info, outline.
 - **Input** — text input. Standard `<input>` props.
 - **Textarea** — multi-line input.
 - **Label** — `<label>` wrapper; pair with `htmlFor`.

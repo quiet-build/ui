@@ -34,6 +34,7 @@ toast.promise(savePromise, {
 
 ## Notes
 
+- `toast.success` / `.info` / `.warning` / `.error` render a semantically colored icon (via the `--success`, `--info`, `--warning`, `--destructive` tokens) on an otherwise neutral toast — status is conveyed by icon shape *and* color, and follows the active theme in both light and dark.
 - Internally uses `next-themes` for color-mode detection. Without a `<ThemeProvider attribute="class">` wrapping the app, `Toaster` falls back to OS `prefers-color-scheme` instead of tracking the `.dark` class on `<html>`. Install `next-themes` and wrap if you need it to follow the class.
 - `toast` is imported from `sonner` (the underlying library), not `@quietbuildlab/ui` — that's intentional so you keep direct access to sonner's full API.
 

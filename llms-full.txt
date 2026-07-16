@@ -155,7 +155,7 @@ Small inline label for status, categories, or counts.
 
 ```tsx
 interface BadgeProps extends React.ComponentProps<"span"> {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
+  variant?: "default" | "secondary" | "destructive" | "success" | "warning" | "info" | "outline" | "ghost" | "link"
   asChild?: boolean
 }
 ```
@@ -165,6 +165,9 @@ import { Badge } from '@quietbuildlab/ui'
 
 <Badge>New</Badge>
 <Badge variant="destructive">Error</Badge>
+<Badge variant="success">Live</Badge>
+<Badge variant="warning">Expiring</Badge>
+<Badge variant="info">Beta</Badge>
 <Badge variant="outline">Draft</Badge>
 ```
 
@@ -733,11 +736,12 @@ don't require user action. For blocking yes/no confirmations, use `AlertDialog` 
 
 ```tsx
 interface AlertProps extends React.ComponentProps<"div"> {
-  variant?: "default" | "destructive"
+  variant?: "default" | "destructive" | "success" | "warning" | "info"
 }
 ```
 
 Subcomponents: `AlertTitle`, `AlertDescription`. A leading `<svg>` icon is auto-styled.
+`success` / `warning` / `info` use the shared status tokens and adapt to dark mode.
 
 ```tsx
 <Alert>
@@ -750,6 +754,12 @@ Subcomponents: `AlertTitle`, `AlertDescription`. A leading `<svg>` icon is auto-
   <TriangleAlertIcon />
   <AlertTitle>Connection failed</AlertTitle>
   <AlertDescription>Check your network and try again.</AlertDescription>
+</Alert>
+
+<Alert variant="success">
+  <CircleCheckIcon />
+  <AlertTitle>Settings saved</AlertTitle>
+  <AlertDescription>Your preferences apply on next sign-in.</AlertDescription>
 </Alert>
 ```
 

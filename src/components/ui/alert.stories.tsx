@@ -7,7 +7,10 @@ const meta: Meta<typeof Alert> = {
   component: Alert,
   tags: ['autodocs', 'ai-generated'],
   argTypes: {
-    variant: { control: 'select', options: ['default', 'destructive'] },
+    variant: {
+      control: 'select',
+      options: ['default', 'destructive', 'success', 'warning', 'info'],
+    },
   },
 }
 export default meta
@@ -35,10 +38,30 @@ export const Destructive: Story = {
 
 export const Success: Story = {
   render: () => (
-    <Alert className="max-w-md">
-      <CheckCircle2Icon className="text-primary" />
+    <Alert variant="success" className="max-w-md">
+      <CheckCircle2Icon />
       <AlertTitle>Settings saved</AlertTitle>
       <AlertDescription>Your preferences will apply on next sign-in.</AlertDescription>
+    </Alert>
+  ),
+}
+
+export const Warning: Story = {
+  render: () => (
+    <Alert variant="warning" className="max-w-md">
+      <TriangleAlertIcon />
+      <AlertTitle>Trial ending soon</AlertTitle>
+      <AlertDescription>Your trial expires in 3 days. Add a plan to keep access.</AlertDescription>
+    </Alert>
+  ),
+}
+
+export const Info: Story = {
+  render: () => (
+    <Alert variant="info" className="max-w-md">
+      <InfoIcon />
+      <AlertTitle>New in this release</AlertTitle>
+      <AlertDescription>Runtime theme switching is now available.</AlertDescription>
     </Alert>
   ),
 }

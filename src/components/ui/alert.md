@@ -14,7 +14,7 @@ import { Alert, AlertTitle, AlertDescription } from '@quietbuildlab/ui'
 
 ```tsx
 interface AlertProps extends React.ComponentProps<"div"> {
-  variant?: "default" | "destructive"
+  variant?: "default" | "destructive" | "success" | "warning" | "info"
 }
 ```
 
@@ -37,6 +37,14 @@ import { InfoIcon, TriangleAlertIcon, CheckCircle2Icon } from 'lucide-react'
   <AlertDescription>Check your network and try again.</AlertDescription>
 </Alert>
 
+<Alert variant="success">
+  <CheckCircle2Icon />
+  <AlertTitle>Settings saved</AlertTitle>
+  <AlertDescription>Your preferences apply on next sign-in.</AlertDescription>
+</Alert>
+
+// `warning` and `info` follow the same shape.
+
 // Title-only (no description)
 <Alert>
   <CheckCircle2Icon />
@@ -47,7 +55,7 @@ import { InfoIcon, TriangleAlertIcon, CheckCircle2Icon } from 'lucide-react'
 ## Notes
 
 - The icon slot is the first `<svg>` child — placement is automatic via CSS grid.
-- For *success* / *warning* / *info* color treatments beyond the two variants, override `--primary` / `--destructive` per instance with `className`, or compose with `Badge`.
+- `success` / `warning` / `info` use the shared status tokens (`--success`, `--warning`, `--info`), so they read consistently across all six themes and adapt to dark mode. Override those tokens in your app's `:root` / `.dark` to tune them per brand.
 
 ## Related
 
