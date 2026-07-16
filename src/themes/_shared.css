@@ -41,6 +41,15 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Status colors — completes the palette alongside --destructive.
+     Enables bg-success / text-warning-foreground / border-info etc. */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -59,8 +68,79 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
 
+  /* Motion easings — same var-indirection pattern as fonts, so the
+     `ease-spring` / `ease-out-quart` utilities resolve the :root values
+     below (which are always emitted, unlike @theme vars, which Tailwind
+     tree-shakes when unused). */
+  --ease-spring: var(--ease-spring);
+  --ease-out-quart: var(--ease-out-quart);
+
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 6px);
+
+  /* Elevation — mode-aware shadow scale (values in the :root/.dark blocks
+     below). Light values match Tailwind's defaults exactly; dark values are
+     stronger so cards/popovers/dialogs keep their depth on dark surfaces. */
+  --shadow-2xs: var(--elevation-2xs);
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+  --shadow-2xl: var(--elevation-2xl);
+}
+
+/* ---------- Shared status colors & elevation ----------
+   Unlike --primary (the per-theme brand accent), these are mode-dependent but
+   brand-independent: success/warning/info read the same across all six presets,
+   and shadows only need to differ between light and dark. Defining them once
+   here means every preset — and the runtime-switching bundle — inherits them.
+   Override in your app's :root / .dark (after the theme import) to tune. */
+:root {
+  /* Motion — shared easings & durations (see DESIGN.md). Reference these
+     instead of hardcoding timings so motion stays consistent and tunable.
+     Durations have no Tailwind namespace; use them via
+     `[transition-duration:var(--duration-normal)]` or plain CSS. */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+
+  --success: oklch(0.52 0.13 150);
+  --success-foreground: oklch(0.98 0.02 150);
+  --warning: oklch(0.55 0.12 70);
+  --warning-foreground: oklch(0.99 0.02 90);
+  --info: oklch(0.52 0.15 250);
+  --info-foreground: oklch(0.98 0.02 250);
+
+  /* Light elevation — byte-identical to Tailwind's default shadow scale */
+  --elevation-2xs: 0 1px rgb(0 0 0 / 0.05);
+  --elevation-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --elevation-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --elevation-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --elevation-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --elevation-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --elevation-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+.dark {
+  --success: oklch(0.72 0.15 155);
+  --success-foreground: oklch(0.18 0.03 150);
+  --warning: oklch(0.80 0.13 80);
+  --warning-foreground: oklch(0.20 0.03 80);
+  --info: oklch(0.70 0.14 250);
+  --info-foreground: oklch(0.18 0.03 250);
+
+  /* Dark elevation — stronger so depth reads on dark surfaces
+     (Geist bumps shadow opacity ~0.04 in light to ~0.16+ in dark). */
+  --elevation-2xs: 0 1px rgb(0 0 0 / 0.4);
+  --elevation-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --elevation-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+  --elevation-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --elevation-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --elevation-xl: 0 20px 25px -5px rgb(0 0 0 / 0.55), 0 8px 10px -6px rgb(0 0 0 / 0.55);
+  --elevation-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.7);
 }

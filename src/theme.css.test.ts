@@ -61,6 +61,37 @@ describe('themes/_shared.css (Tailwind wiring)', () => {
   it('declares selector-based dark mode', () => {
     expect(css).toContain('@custom-variant dark')
   })
+
+  it('maps the shared status colors to Tailwind', () => {
+    for (const token of ['success', 'warning', 'info']) {
+      expect(css).toContain(`--color-${token}: var(--${token})`)
+      expect(css).toContain(`--color-${token}-foreground: var(--${token}-foreground)`)
+    }
+  })
+
+  it('remaps the Tailwind shadow scale onto mode-aware elevation tokens', () => {
+    for (const step of ['xs', 'sm', 'md', 'lg', 'xl']) {
+      expect(css).toContain(`--shadow-${step}: var(--elevation-${step})`)
+    }
+  })
+
+  it('defines shared status + elevation values for both light and dark', () => {
+    const rootStart = css.indexOf(':root {')
+    const darkStart = css.indexOf('.dark {')
+    expect(rootStart).toBeGreaterThan(-1)
+    expect(darkStart).toBeGreaterThan(rootStart)
+    const root = css.slice(rootStart, darkStart)
+    const dark = css.slice(darkStart)
+    for (const token of ['--success', '--warning', '--info', '--elevation-sm']) {
+      expect(root, `_shared :root missing ${token}`).toContain(`${token}:`)
+      expect(dark, `_shared .dark missing ${token}`).toContain(`${token}:`)
+    }
+  })
+
+  it('exposes shared motion tokens', () => {
+    expect(css).toContain('--ease-spring:')
+    expect(css).toContain('--duration-normal:')
+  })
 })
 
 describe('themes/index.css (runtime-switching bundle)', () => {
