@@ -176,6 +176,13 @@ function ThemeCard({ name, desc, dataTheme }: (typeof PRESETS)[number]) {
         <Button size="sm" variant="outline">Outline</Button>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="success">Live</Badge>
+        <Badge variant="warning">Expiring</Badge>
+        <Badge variant="info">Beta</Badge>
+        <Badge variant="destructive">Failed</Badge>
+      </div>
+
       <div className="grid gap-2">
         <Label htmlFor={`${dataTheme}-input`} className="text-xs">File</Label>
         <Input id={`${dataTheme}-input`} defaultValue="invoice-2026.pdf" />
@@ -295,6 +302,7 @@ function RuntimeSwitcherDemo() {
           <Button>Primary</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="outline">Outline</Button>
+          <Badge variant="success">Live</Badge>
         </div>
         <Progress value={70} />
       </div>

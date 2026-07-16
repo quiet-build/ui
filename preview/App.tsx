@@ -1,5 +1,8 @@
 import { useState, type ReactNode } from 'react'
+import { toast } from 'sonner'
+import { CircleCheckIcon, TriangleAlertIcon, InfoIcon } from 'lucide-react'
 import {
+  Alert, AlertTitle, AlertDescription,
   Button, Badge, Input, Textarea, Label,
   Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -57,6 +60,36 @@ export function App() {
             <Button variant="destructive">Destructive</Button>
             <Badge>Beta</Badge>
             <Badge variant="secondary">Synced</Badge>
+            <Badge variant="success">Live</Badge>
+            <Badge variant="warning">Expiring</Badge>
+            <Badge variant="info">Info</Badge>
+            <Badge variant="destructive">Failed</Badge>
+          </Section>
+
+          <Section title="Status & feedback">
+            <div className="grid w-full gap-3">
+              <Alert variant="success">
+                <CircleCheckIcon />
+                <AlertTitle>Changes saved</AlertTitle>
+                <AlertDescription>Your preferences apply on next sign-in.</AlertDescription>
+              </Alert>
+              <Alert variant="warning">
+                <TriangleAlertIcon />
+                <AlertTitle>Trial ending soon</AlertTitle>
+                <AlertDescription>Your trial expires in 3 days.</AlertDescription>
+              </Alert>
+              <Alert variant="info">
+                <InfoIcon />
+                <AlertTitle>New in this release</AlertTitle>
+                <AlertDescription>Runtime theme switching is now available.</AlertDescription>
+              </Alert>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => toast.success('Changes saved')}>Success toast</Button>
+                <Button size="sm" variant="outline" onClick={() => toast.warning('Disk space running low')}>Warning toast</Button>
+                <Button size="sm" variant="outline" onClick={() => toast.info('Auto-save is on')}>Info toast</Button>
+                <Button size="sm" variant="outline" onClick={() => toast.error('Couldn’t save changes', { description: 'Check your connection.' })}>Error toast</Button>
+              </div>
+            </div>
           </Section>
 
           <Section title="Form fields">
