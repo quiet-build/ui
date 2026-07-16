@@ -614,6 +614,7 @@ interface DataTableProps<TData, TValue> {
   columnFilters?: ColumnFiltersState
   onColumnFiltersChange?: (state: ColumnFiltersState) => void
 
+  enableViewOptions?: boolean            // default false — shows the "View" column-visibility dropdown
   columnVisibility?: VisibilityState
   onColumnVisibilityChange?: (state: VisibilityState) => void
 
@@ -808,8 +809,12 @@ const columns: ColumnDef<User>[] = [
 
 ### Column visibility
 
-Automatic — whenever a column has `enableHiding !== false` (the default), the toolbar renders a
-"View" dropdown. Name a column for that menu with `meta: { label: '...' }` if its header isn't a
+```tsx
+<DataTable columns={columns} data={allUsers} enableViewOptions />
+```
+
+`enableViewOptions` renders a "View" dropdown listing every column with `enableHiding !== false`
+(the default). Name a column for that menu with `meta: { label: '...' }` if its header isn't a
 plain string.
 
 ### Row selection
@@ -824,8 +829,11 @@ plain string.
 ```
 
 Adds a checkbox column (header checkbox = select all on the current page, with an indeterminate
-state) and an "X of Y row(s) selected." summary in the pagination footer. `enableRowSelection`
-also accepts a per-row predicate: `(row) => row.original.status !== 'archived'`.
+state) and a selection summary in the pagination footer: "X of Y row(s) selected." client-side,
+or "X row(s) selected." server-side (that row model only sees the current page, so "of Y" would
+undercount selections on other pages — `getRowId` still keeps the selection itself correct
+across pages). `enableRowSelection` also accepts a per-row predicate:
+`(row) => row.original.status !== 'archived'`.
 
 ---
 

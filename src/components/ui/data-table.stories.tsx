@@ -122,6 +122,18 @@ export const Loading: Story = {
   ),
 }
 
+export const StickyHeader: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        All {ROWS.length} rows on one page, in a max-height scroll wrapper — scroll within the
+        table and the header row stays pinned to the top.
+      </p>
+      <DataTable columns={columns} data={ROWS} pageSize={ROWS.length} stickyHeader />
+    </div>
+  ),
+}
+
 export const Sorting: Story = {
   render: () => (
     <div className="w-[600px]">

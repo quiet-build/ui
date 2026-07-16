@@ -46,6 +46,7 @@ interface DataTableProps<TData, TValue> {
   columnFilters?: ColumnFiltersState
   onColumnFiltersChange?: (state: ColumnFiltersState) => void
 
+  enableViewOptions?: boolean            // default false — shows the "View" column-visibility dropdown
   columnVisibility?: VisibilityState
   onColumnVisibilityChange?: (state: VisibilityState) => void
 
@@ -162,11 +163,17 @@ const columns: ColumnDef<User>[] = [
 
 ## Usage — column visibility
 
-Automatic: whenever at least one column has `enableHiding !== false` (the default), the default toolbar (or `DataTableToolbar`) renders a "View" dropdown. Name a column for that menu via a string `header`, or `meta: { label: '...' }` when the header is a custom render function:
+```tsx
+<DataTable columns={columns} data={allUsers} enableViewOptions />
+```
+
+`enableViewOptions` shows a "View" dropdown (in the default toolbar) listing every column with `enableHiding !== false` (the default). Name a column for that menu via a string `header`, or `meta: { label: '...' }` when the header is a custom render function:
 
 ```tsx
 { accessorKey: 'internalId', header: () => <code>ID</code>, meta: { label: 'Internal ID' } }
 ```
+
+When composing your own toolbar via `renderToolbar`, `DataTableToolbar` always renders `DataTableViewOptions` unless you pass `showViewOptions={false}` to it.
 
 ## Usage — row selection
 
@@ -179,14 +186,14 @@ Automatic: whenever at least one column has `enableHiding !== false` (the defaul
 />
 ```
 
-Adds a checkbox column (header checkbox selects/deselects every row on the current page, with an indeterminate state) and an "X of Y row(s) selected." summary in the pagination footer. `enableRowSelection` also accepts a per-row predicate: `(row) => row.original.status !== 'archived'`.
+Adds a checkbox column (header checkbox selects/deselects every row on the current page, with an indeterminate state) and a selection summary in the pagination footer: "X of Y row(s) selected." in client-side mode, or "X row(s) selected." in server-side mode (the row model there only sees the current page, so the "of Y" denominator would silently undercount selections made on other pages — `getRowId` still makes the underlying selection correct across pages). `enableRowSelection` also accepts a per-row predicate: `(row) => row.original.status !== 'archived'`.
 
 ## Composing a fully custom table
 
 `DataTable` is built from exported pieces you can use directly:
 
 - **`DataTableColumnHeader`** — `{ column, title, className? }`. Sortable header cell; renders plain text if `!column.getCanSort()`.
-- **`DataTableToolbar`** — `{ table, searchPlaceholder?, children?, className? }`. Search box (when `table.options.enableGlobalFilter`) + Reset + `children` + `DataTableViewOptions`.
+- **`DataTableToolbar`** — `{ table, searchPlaceholder?, children?, className?, showViewOptions? }`. Search box (when `table.options.enableGlobalFilter`) + Reset + `children` + `DataTableViewOptions` (omit with `showViewOptions={false}`).
 - **`DataTableFacetedFilter`** — `{ column?, title, options: { label, value, icon? }[] }`. Popover checkbox list with facet counts; pair the column with `filterFn: dataTableFacetedFilterFn`.
 - **`DataTableViewOptions`** — `{ table }`. Column-visibility dropdown; renders `null` if no column can be hidden.
 - **`DataTablePagination`** — `{ table, pageSizeOptions?, loading? }`. Rows-per-page selector, selection summary, page status, Prev/Next.

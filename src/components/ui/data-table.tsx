@@ -28,6 +28,7 @@ import {
   ChevronsUpDown,
   EyeOff,
   Loader2,
+  MoreVertical,
   Search,
   SlidersHorizontal,
   X,
@@ -160,7 +161,7 @@ export function DataTableColumnHeader<TData, TValue>({
               className="text-muted-foreground"
               aria-label={`${title} column menu`}
             >
-              <ChevronsUpDown className="size-3.5" aria-hidden="true" />
+              <MoreVertical className="size-3.5" aria-hidden="true" />
             </Button>
           }
         />
@@ -318,19 +319,22 @@ export interface DataTableToolbarProps<TData> {
   searchPlaceholder?: string
   children?: React.ReactNode
   className?: string
+  /** Render {@link DataTableViewOptions} on the trailing edge. Default true. */
+  showViewOptions?: boolean
 }
 
 /**
  * Default toolbar: debounced global search (when `enableGlobalFilter` is on)
  * + a "Reset" button (when any filter is active) + `children` (typically
  * {@link DataTableFacetedFilter}s) on the left, {@link DataTableViewOptions}
- * on the right.
+ * on the right (unless `showViewOptions` is false).
  */
 export function DataTableToolbar<TData>({
   table,
   searchPlaceholder = 'Search…',
   children,
   className,
+  showViewOptions = true,
 }: DataTableToolbarProps<TData>) {
   const showSearch = table.options.enableGlobalFilter === true
   const globalFilter = (table.getState().globalFilter as string | undefined) ?? ''
@@ -388,7 +392,7 @@ export function DataTableToolbar<TData>({
           </Button>
         ) : null}
       </div>
-      <DataTableViewOptions table={table} />
+      {showViewOptions ? <DataTableViewOptions table={table} /> : null}
     </div>
   )
 }
@@ -413,12 +417,24 @@ export function DataTablePagination<TData>({
     pageCount: table.getPageCount(),
   })
   const showSelectionSummary = Boolean(table.options.enableRowSelection)
+  // In server-side mode, getFilteredRowModel()/getFilteredSelectedRowModel()
+  // only see the current page's data — they'd silently undercount selections
+  // made on other pages. Count directly from state instead, and drop the
+  // unknowable "of Y" denominator (getRowId makes selection itself correct
+  // across pages; it's only this summary's row model that can't see beyond
+  // the current page).
+  const isServerSide = table.options.manualPagination
+  const selectedCount = isServerSide
+    ? Object.values(table.getState().rowSelection).filter(Boolean).length
+    : table.getFilteredSelectedRowModel().rows.length
 
   return (
     <div className={cn('flex flex-wrap items-center gap-3', className)}>
       <div className="min-w-0 flex-1 text-sm text-muted-foreground">
         {showSelectionSummary
-          ? `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected.`
+          ? isServerSide
+            ? `${selectedCount} row(s) selected.`
+            : `${selectedCount} of ${table.getFilteredRowModel().rows.length} row(s) selected.`
           : null}
       </div>
 
@@ -533,6 +549,8 @@ export interface DataTableProps<TData, TValue> {
   columnFilters?: ColumnFiltersState
   onColumnFiltersChange?: (state: ColumnFiltersState) => void
 
+  /** Show the "View" column-visibility dropdown in the default toolbar. Default false. */
+  enableViewOptions?: boolean
   /** Controlled column visibility state. */
   columnVisibility?: VisibilityState
   onColumnVisibilityChange?: (state: VisibilityState) => void
@@ -611,6 +629,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder,
   columnFilters: columnFiltersProp,
   onColumnFiltersChange,
+  enableViewOptions = false,
   columnVisibility: columnVisibilityProp,
   onColumnVisibilityChange,
   enableRowSelection = false,
@@ -732,19 +751,26 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   })
 
-  const showDefaultToolbar =
-    !renderToolbar && (enableGlobalFilter || table.getAllColumns().some((c) => c.getCanHide()))
+  const showDefaultToolbar = !renderToolbar && (enableGlobalFilter || enableViewOptions)
 
   return (
     <div className={cn('space-y-3', className)} aria-busy={loading || undefined}>
       {renderToolbar ? (
         renderToolbar(table)
       ) : showDefaultToolbar ? (
-        <DataTableToolbar table={table} searchPlaceholder={searchPlaceholder} />
+        <DataTableToolbar
+          table={table}
+          searchPlaceholder={searchPlaceholder}
+          showViewOptions={enableViewOptions}
+        />
       ) : null}
 
       <div
-        className={cn('rounded-md border', stickyHeader && 'max-h-[32rem] overflow-y-auto')}
+        className={cn(
+          'rounded-md border',
+          stickyHeader &&
+            'max-h-[32rem] overflow-auto [&_[data-slot=table-container]]:overflow-visible'
+        )}
       >
         <TablePrimitive className={cn('transition-opacity', loading && 'opacity-60')}>
           <TableHeader
@@ -779,6 +805,10 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
+                  // `data-state` drives the actual selected-row styling.
+                  // `aria-selected` is supplementary here — it's only
+                  // formally defined for grid/treegrid rows, but is
+                  // harmless progressive enhancement on a plain table.
                   aria-selected={enableRowSelection ? row.getIsSelected() : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (

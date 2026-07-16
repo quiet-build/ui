@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, Table } from '@tanstack/react-table'
 import {
   DataTable,
   DataTableFacetedFilter,
@@ -96,6 +96,56 @@ describe('DataTable global filter', () => {
     render(<DataTable columns={columns} data={rows} pageSize={10} />)
     expect(screen.queryByPlaceholderText('Search…')).not.toBeInTheDocument()
   })
+
+  it('does not filter locally in server-side mode; fires onGlobalFilterChange instead', async () => {
+    const user = userEvent.setup()
+    const fn = vi.fn()
+    render(
+      <DataTable
+        columns={columns}
+        data={rows.slice(0, 2)}
+        enableGlobalFilter
+        onGlobalFilterChange={fn}
+        pageIndex={0}
+        pageCount={2}
+      />
+    )
+    const input = screen.getByPlaceholderText('Search…')
+    await user.type(input, 'Ada')
+
+    await waitFor(() => expect(fn).toHaveBeenCalledWith('Ada'), { timeout: 2000 })
+    // Server owns filtering — the provided (unfiltered) slice still renders in full.
+    expect(screen.getByText('Ada')).toBeInTheDocument()
+    expect(screen.getByText('Grace')).toBeInTheDocument()
+  })
+})
+
+describe('DataTable column filters', () => {
+  it('does not filter locally in server-side mode; fires onColumnFiltersChange instead', () => {
+    const fn = vi.fn()
+    let table: Table<Invoice> | undefined
+    render(
+      <DataTable
+        columns={columns}
+        data={rows.slice(0, 2)}
+        onColumnFiltersChange={fn}
+        pageIndex={0}
+        pageCount={2}
+        renderToolbar={(t) => {
+          table = t
+          return null
+        }}
+      />
+    )
+    act(() => {
+      table?.getColumn('status')?.setFilterValue(['paid'])
+    })
+
+    expect(fn).toHaveBeenCalledWith([{ id: 'status', value: ['paid'] }])
+    // Server owns filtering — the provided (unfiltered) slice still renders in full.
+    expect(screen.getByText('Ada')).toBeInTheDocument()
+    expect(screen.getByText('Grace')).toBeInTheDocument()
+  })
 })
 
 describe('DataTableFacetedFilter', () => {
@@ -136,9 +186,14 @@ describe('DataTableFacetedFilter', () => {
 })
 
 describe('DataTableViewOptions', () => {
-  it('hides a column via the View menu', async () => {
-    const user = userEvent.setup()
+  it('does not render by default — column visibility is opt-in', () => {
     render(<DataTable columns={columns} data={rows} pageSize={10} />)
+    expect(screen.queryByRole('button', { name: 'View' })).not.toBeInTheDocument()
+  })
+
+  it('hides a column via the View menu when enableViewOptions is set', async () => {
+    const user = userEvent.setup()
+    render(<DataTable columns={columns} data={rows} pageSize={10} enableViewOptions />)
     expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'View' }))
@@ -154,7 +209,9 @@ describe('DataTableViewOptions', () => {
     // (DataTableColumnHeader), which used to make the View menu fall back to
     // the raw column id ("customer") instead of the original label.
     const user = userEvent.setup()
-    render(<DataTable columns={columns} data={rows} pageSize={10} enableSorting />)
+    render(
+      <DataTable columns={columns} data={rows} pageSize={10} enableSorting enableViewOptions />
+    )
     await user.click(screen.getByRole('button', { name: 'View' }))
     expect(await screen.findByRole('menuitemcheckbox', { name: 'Customer' })).toBeInTheDocument()
     expect(screen.queryByRole('menuitemcheckbox', { name: 'customer' })).not.toBeInTheDocument()
@@ -198,6 +255,25 @@ describe('DataTable row selection', () => {
     render(<DataTable columns={columns} data={rows} pageSize={10} />)
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
+
+  it('counts selections from state (not the current page) in server-side mode', () => {
+    // Regression: getFilteredSelectedRowModel()/getFilteredRowModel() only see
+    // the current page's provided data in server-side mode. Selecting rows on
+    // a different page (persisted via getRowId) used to silently read as 0
+    // selected while viewing this page.
+    render(
+      <DataTable
+        columns={columns}
+        data={rows.slice(2, 4)} // current server-provided page — excludes the selected rows below
+        pageIndex={1}
+        pageCount={2}
+        enableRowSelection
+        getRowId={(r) => r.id}
+        rowSelection={{ 'INV-1': true, 'INV-2': true }}
+      />
+    )
+    expect(screen.getByText('2 row(s) selected.')).toBeInTheDocument()
+  })
 })
 
 describe('DataTable stickyHeader', () => {
@@ -209,9 +285,28 @@ describe('DataTable stickyHeader', () => {
     expect(thead?.className).toMatch(/sticky/)
   })
 
+  it('makes the outer wrapper the sole scrollport so sticky actually engages', () => {
+    // Regression: the Table primitive's own inner wrapper
+    // (data-slot="table-container") sets overflow-x-auto, which the CSS
+    // spec forces into a real (if empty) scrollport for BOTH axes. A sticky
+    // thead binds to the *nearest* such ancestor, so without neutralizing
+    // that inner wrapper, the header sticks relative to a container that
+    // never itself scrolls — and just scrolls away with everything else.
+    const { container } = render(
+      <DataTable columns={columns} data={rows} pageSize={10} stickyHeader />
+    )
+    const outer = container.querySelector('.rounded-md.border')
+    expect(outer?.className).toMatch(/overflow-auto/)
+    expect(outer?.className).toMatch(/overflow-visible/) // the table-container override
+    const tableContainer = container.querySelector('[data-slot="table-container"]')
+    expect(tableContainer?.className).toContain('overflow-x-auto') // still the primitive's own class
+  })
+
   it('does not apply sticky classes by default', () => {
     const { container } = render(<DataTable columns={columns} data={rows} pageSize={10} />)
     const thead = container.querySelector('thead')
+    const outer = container.querySelector('.rounded-md.border')
     expect(thead?.className).not.toMatch(/sticky/)
+    expect(outer?.className).not.toMatch(/overflow-auto/)
   })
 })
