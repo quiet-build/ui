@@ -167,6 +167,8 @@ return (
 
 `columns: ColumnDef<TData>[]` types come from `@tanstack/react-table` (a transitive dep — consumers `import type { ColumnDef } from '@tanstack/react-table'` directly).
 
+**Sorting, search, filtering, column visibility, row selection** are opt-in via props (`enableSorting`, `enableGlobalFilter`, `enableRowSelection`, plus controlled `columnFilters`/`columnVisibility`/`rowSelection` state) — all off by default, so existing usages are unaffected. In server-side mode these are manual too: the table only fires `onSortingChange`/`onColumnFiltersChange`/`onGlobalFilterChange`, it never sorts/filters locally. `DataTable` also exports its building blocks (`DataTableColumnHeader`, `DataTableToolbar`, `DataTableFacetedFilter`, `DataTableViewOptions`, `DataTablePagination`, `dataTableFacetedFilterFn`) for composing a custom table via `renderToolbar` or your own `useReactTable()` call. Full reference: `src/components/ui/data-table.md`.
+
 ## Common pitfalls
 
 - **Don't use raw color utilities** (`bg-red-500`) — defeats the theme. Use semantic tokens.
@@ -175,6 +177,7 @@ return (
 - **Don't import more than one theme entrypoint.** `theme.css`, `themes/<name>.css`, and `themes.css` all define `:root` tokens — importing two will cause the second to win, possibly with surprising results.
 - **Don't expect SSR-specific hydration helpers** — components are client-side React; the `'use client'` directive is in the components for Next.js App Router compatibility.
 - **Tailwind utility overrides via `className` work via `tailwind-merge`** — `cn('px-2', 'px-4')` resolves to `px-4`. But for tokens, override the CSS variable instead of fighting class specificity.
+- **`DataTable`'s `renderToolbar` fully replaces the default toolbar** (search + view options) — wrap your custom content in `DataTableToolbar` to keep them alongside your own filters.
 
 ## Editing this library (contributors)
 

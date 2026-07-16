@@ -2,7 +2,12 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ColumnDef, PaginationState } from '@tanstack/react-table'
 import { expect, userEvent, within } from 'storybook/test'
-import { DataTable } from './data-table'
+import {
+  DataTable,
+  DataTableFacetedFilter,
+  DataTableToolbar,
+  dataTableFacetedFilterFn,
+} from './data-table'
 
 type Invoice = { id: string; status: 'Paid' | 'Pending' | 'Unpaid'; amount: number }
 
@@ -14,12 +19,21 @@ const ROWS: Invoice[] = Array.from({ length: 47 }, (_, i) => ({
 
 const columns: ColumnDef<Invoice>[] = [
   { accessorKey: 'id', header: 'Invoice' },
-  { accessorKey: 'status', header: 'Status' },
+  { accessorKey: 'status', header: 'Status', filterFn: dataTableFacetedFilterFn },
   {
     accessorKey: 'amount',
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => <div className="text-right">${row.original.amount.toFixed(2)}</div>,
+    // Custom `header` render functions bypass the string-header auto-wrap,
+    // so name the column explicitly for DataTableViewOptions.
+    meta: { label: 'Amount' },
   },
+]
+
+const STATUS_OPTIONS = [
+  { label: 'Paid', value: 'Paid' },
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Unpaid', value: 'Unpaid' },
 ]
 
 const meta: Meta<typeof DataTable<Invoice, unknown>> = {
@@ -103,6 +117,90 @@ export const Loading: Story = {
         pageCount={5}
         pageSize={10}
         loading
+      />
+    </div>
+  ),
+}
+
+export const Sorting: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <DataTable columns={columns} data={ROWS} pageSize={10} enableSorting />
+    </div>
+  ),
+  play: async ({ canvasElement, userEvent: ue }) => {
+    const canvas = within(canvasElement)
+    const header = canvas.getByRole('button', { name: 'Invoice' })
+    await ue.click(header)
+    await expect(canvas.getAllByRole('columnheader')[0]).toHaveAttribute('aria-sort', 'ascending')
+    await ue.click(header)
+    await expect(canvas.getAllByRole('columnheader')[0]).toHaveAttribute('aria-sort', 'descending')
+  },
+}
+
+export const SearchFilterAndViewOptions: Story = {
+  name: 'Search, faceted filter & view options',
+  render: () => (
+    <div className="w-[600px]">
+      <DataTable
+        columns={columns}
+        data={ROWS}
+        pageSize={10}
+        enableGlobalFilter
+        searchPlaceholder="Search invoices…"
+        renderToolbar={(table) => (
+          <DataTableToolbar table={table} searchPlaceholder="Search invoices…">
+            <DataTableFacetedFilter
+              column={table.getColumn('status')}
+              title="Status"
+              options={STATUS_OPTIONS}
+            />
+          </DataTableToolbar>
+        )}
+      />
+    </div>
+  ),
+}
+
+export const RowSelection: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <DataTable
+        columns={columns}
+        data={ROWS.slice(0, 10)}
+        pageSize={10}
+        enableRowSelection
+        getRowId={(row) => row.id}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement, userEvent: ue }) => {
+    const canvas = within(canvasElement)
+    await ue.click(canvas.getByRole('checkbox', { name: /select all rows/i }))
+    await expect(canvas.getByText('10 of 10 row(s) selected.')).toBeVisible()
+  },
+}
+
+export const KitchenSink: Story = {
+  render: () => (
+    <div className="w-[700px]">
+      <DataTable
+        columns={columns}
+        data={ROWS}
+        pageSize={10}
+        enableSorting
+        enableGlobalFilter
+        enableRowSelection
+        getRowId={(row) => row.id}
+        renderToolbar={(table) => (
+          <DataTableToolbar table={table} searchPlaceholder="Search invoices…">
+            <DataTableFacetedFilter
+              column={table.getColumn('status')}
+              title="Status"
+              options={STATUS_OPTIONS}
+            />
+          </DataTableToolbar>
+        )}
       />
     </div>
   ),

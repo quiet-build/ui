@@ -583,8 +583,11 @@ import {
 
 ### DataTable
 
-TanStack Table-powered data grid with built-in pagination controls, rows-per-page selector,
-empty state, and loading state.
+TanStack Table-powered data grid with built-in pagination, sorting, filtering, column
+visibility, and row selection. Also exports the building blocks it's made from —
+`DataTableColumnHeader`, `DataTableToolbar`, `DataTableFacetedFilter`, `DataTableViewOptions`,
+`DataTablePagination`, `dataTableFacetedFilterFn` — for composing a fully custom table. See
+"DataTable in depth" below.
 
 ```tsx
 interface DataTableProps<TData, TValue> {
@@ -598,8 +601,34 @@ interface DataTableProps<TData, TValue> {
   loading?: boolean                      // dims table and disables controls
   emptyMessage?: React.ReactNode         // default "No results."
   className?: string
+
+  enableSorting?: boolean                // default false — sortable string headers auto-wrap
+  sorting?: SortingState
+  onSortingChange?: (state: SortingState) => void
+
+  enableGlobalFilter?: boolean           // default false — shows the built-in search box
+  globalFilter?: string
+  onGlobalFilterChange?: (value: string | undefined) => void
+  searchPlaceholder?: string             // default "Search…"
+
+  columnFilters?: ColumnFiltersState
+  onColumnFiltersChange?: (state: ColumnFiltersState) => void
+
+  columnVisibility?: VisibilityState
+  onColumnVisibilityChange?: (state: VisibilityState) => void
+
+  enableRowSelection?: boolean | ((row: Row<TData>) => boolean)  // default false
+  rowSelection?: RowSelectionState
+  onRowSelectionChange?: (state: RowSelectionState) => void
+  getRowId?: (row: TData, index: number) => string
+
+  renderToolbar?: (table: Table<TData>) => React.ReactNode  // replaces the default toolbar
+  stickyHeader?: boolean                 // default false
 }
 ```
+
+In server-side mode (`pageCount` set), sorting and filtering are manual too — the table never
+sorts/filters locally, it only fires the `on*Change` callbacks.
 
 Column types come from `@tanstack/react-table` (a transitive dep):
 
@@ -724,6 +753,79 @@ export function OrdersTable() {
   )
 }
 ```
+
+### Sorting
+
+```tsx
+<DataTable columns={columns} data={allUsers} enableSorting />
+```
+
+A column whose `header` is a plain string auto-wraps with the sortable `DataTableColumnHeader`
+(click toggles sort, shift-click multi-sorts, a caret menu offers explicit Asc/Desc/Hide).
+Opt a column out with `enableSorting: false` on its `ColumnDef`; give it a function `header` to
+render it yourself instead (bypasses the auto-wrap):
+
+```tsx
+{ accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Full name" /> }
+```
+
+### Search and faceted column filters
+
+```tsx
+<DataTable columns={columns} data={allUsers} enableGlobalFilter searchPlaceholder="Search users…" />
+```
+
+For an enum-ish column filter (checkbox popover, per-option counts from
+`column.getFacetedUniqueValues()`, client-side mode only), pair `filterFn:
+dataTableFacetedFilterFn` on the column with `DataTableFacetedFilter`, composed via
+`renderToolbar` (which replaces the default toolbar, so wrap with `DataTableToolbar` to keep the
+search box + Reset + `DataTableViewOptions`):
+
+```tsx
+const columns: ColumnDef<User>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'role', header: 'Role', filterFn: dataTableFacetedFilterFn },
+]
+
+<DataTable
+  columns={columns}
+  data={allUsers}
+  enableGlobalFilter
+  renderToolbar={(table) => (
+    <DataTableToolbar table={table}>
+      <DataTableFacetedFilter
+        column={table.getColumn('role')}
+        title="Role"
+        options={[
+          { label: 'Admin', value: 'admin' },
+          { label: 'Member', value: 'member' },
+        ]}
+      />
+    </DataTableToolbar>
+  )}
+/>
+```
+
+### Column visibility
+
+Automatic — whenever a column has `enableHiding !== false` (the default), the toolbar renders a
+"View" dropdown. Name a column for that menu with `meta: { label: '...' }` if its header isn't a
+plain string.
+
+### Row selection
+
+```tsx
+<DataTable
+  columns={columns}
+  data={allUsers}
+  enableRowSelection
+  getRowId={(user) => user.id}   // recommended, especially with server-side mode
+/>
+```
+
+Adds a checkbox column (header checkbox = select all on the current page, with an indeterminate
+state) and an "X of Y row(s) selected." summary in the pagination footer. `enableRowSelection`
+also accepts a per-row predicate: `(row) => row.original.status !== 'archived'`.
 
 ---
 
@@ -908,6 +1010,8 @@ const [v, setV] = useState([35])
   specificity.
 - **`onPaginationChange` in server-side DataTable receives the full next `PaginationState`**
   (both `pageIndex` and `pageSize`). Handle both — the user may change either.
+- **DataTable's `renderToolbar` fully replaces the default toolbar** (search + view options).
+  Wrap your custom content in `DataTableToolbar` to keep them alongside your own filters.
 
 ---
 
