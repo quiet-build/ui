@@ -97,7 +97,9 @@ accent. Override only what you want; everything else stays.
 | **Accent** | `--primary`, `--primary-foreground`, `--ring` |
 | **Quiet UI** | `--secondary`, `--muted`, `--accent` (and their `-foreground` pairs) |
 | **Form chrome** | `--border`, `--input` |
-| **Status** | `--destructive`, `--destructive-foreground` |
+| **Status** | `--destructive`, `--success`, `--warning`, `--info` (and their `-foreground` pairs) |
+| **Elevation** | `--elevation-2xs` … `--elevation-2xl` (drive the `shadow-*` utilities) |
+| **Motion** | `--duration-fast/normal/slow`, `--ease-spring`, `--ease-out-quart` |
 | **Charts** | `--chart-1` through `--chart-5` |
 | **Sidebar** | `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-accent`, `--sidebar-border`, `--sidebar-ring` |
 | **Shape** | `--radius` (e.g. `0` for square corners, `0.5rem` for soft, `9999px` for pill) |
@@ -106,6 +108,13 @@ accent. Override only what you want; everything else stays.
 Override in `:root` for light and `.dark` for dark mode. If you only override
 in `:root`, dark mode falls back to the preset's dark values for those tokens —
 usually not what you want for a brand color.
+
+**Shared tokens.** `--success`, `--warning`, `--info`, and the `--elevation-*`
+scale are defined once (light + dark) in `_shared.css` and inherited by every
+preset — they read the same regardless of brand accent, and only vary between
+light and dark. Override them in your app's `:root` / `.dark` just like any
+other token. See [`DESIGN.md`](./DESIGN.md) for the status palette, elevation,
+motion, and spacing rhythm, and [`CONTENT.md`](./CONTENT.md) for UI voice.
 
 ## Why OKLCH
 

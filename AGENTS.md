@@ -108,6 +108,10 @@ Override CSS variables AFTER the preset import:
 
 Override only what you need. Everything else stays the preset's value. See `THEMING.md` for the full token table.
 
+Beyond the per-theme brand tokens, three **shared** groups are defined once (light + dark) and inherited by every preset — override them the same way:
+- **Status colors** `--success` / `--warning` / `--info` (+ `-foreground`) complete the palette alongside `--destructive`. They back the `success` / `warning` / `info` variants of `Alert` and `Badge`, and the colored icons on `toast.success/.warning/.info`.
+- **Elevation** `--elevation-2xs … --elevation-2xl` drive the `shadow-*` utilities; light matches Tailwind's defaults, dark is stronger so surfaces keep depth. See `DESIGN.md`.
+
 ## Composition rules
 
 1. **Tooltip needs `<TooltipProvider>` somewhere up the tree.** Wrap the app once at the root.
@@ -118,7 +122,7 @@ Override only what you need. Everything else stays the preset's value. See `THEM
 
 ## Alert vs AlertDialog
 
-- **`<Alert>`** is inline, non-blocking — an info/warning/success banner.
+- **`<Alert>`** is inline, non-blocking — a status banner. Variants: `default`, `destructive`, `success`, `warning`, `info`.
 - **`<AlertDialog>`** is blocking — a yes/no confirmation modal for destructive actions.
 
 Both are themed. Pick by intent.
@@ -205,6 +209,8 @@ After updating a public component `.md`, also check if `llms.txt`, `llms-full.tx
 - llms.txt (concise index): https://quiet-build.github.io/ui/llms.txt
 - llms-full.txt (full API): https://quiet-build.github.io/ui/llms-full.txt
 - THEMING.md: https://github.com/quiet-build/ui/blob/main/THEMING.md
+- DESIGN.md: foundations — spacing rhythm, radii, elevation, motion, status palette
+- CONTENT.md: UI voice & content guidelines (labels, errors, toasts, empty states)
 - Source: https://github.com/quiet-build/ui
 
 ## Companion Documentation
