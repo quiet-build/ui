@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import type { ColumnDef, Table } from '@tanstack/react-table'
 import {
   DataTable,
+  DataTableColumnHeader,
   DataTableFacetedFilter,
   dataTableFacetedFilterFn,
 } from '../../index'
@@ -273,6 +274,68 @@ describe('DataTable row selection', () => {
       />
     )
     expect(screen.getByText('2 row(s) selected.')).toBeInTheDocument()
+  })
+
+  it('disables checkboxes for rows excluded by a per-row predicate', async () => {
+    const user = userEvent.setup()
+    render(
+      <DataTable
+        columns={columns}
+        data={rows}
+        pageSize={10}
+        enableRowSelection={(row) => row.original.status !== 'unpaid'}
+        getRowId={(r) => r.id}
+      />
+    )
+    // INV-3 (Alan) is 'unpaid' — excluded from selection. Base UI's Checkbox
+    // renders as a non-native `[role="checkbox"]`, so assert aria-disabled
+    // directly rather than jest-dom's toBeDisabled() (native-element heuristic).
+    expect(screen.getByRole('checkbox', { name: /select row 3/i })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
+    expect(screen.getByRole('checkbox', { name: /select row 1/i })).not.toHaveAttribute(
+      'aria-disabled'
+    )
+
+    // Select-all only selects the eligible rows (getCanSelect() gates it),
+    // but the "of Y" denominator still counts every filtered row.
+    await user.click(screen.getByRole('checkbox', { name: /select all rows/i }))
+    expect(screen.getByText(`${rows.length - 1} of ${rows.length} row(s) selected.`)).toBeInTheDocument()
+  })
+})
+
+describe('DataTableColumnHeader (manual usage)', () => {
+  // Composed directly in a column def, bypassing enableSorting's auto-wrap —
+  // the "custom composition" pattern for columns with a custom title/render.
+  it('renders the custom title and toggles sort on click', async () => {
+    const user = userEvent.setup()
+    const manualColumns: ColumnDef<Invoice>[] = [
+      { accessorKey: 'id', header: 'Invoice' },
+      {
+        accessorKey: 'customer',
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Full name" />,
+      },
+    ]
+    render(<DataTable columns={manualColumns} data={rows} pageSize={10} enableSorting />)
+
+    const header = screen.getByRole('button', { name: 'Full name' })
+    await user.click(header)
+    expect(screen.getAllByRole('columnheader')[1]).toHaveAttribute('aria-sort', 'ascending')
+    expect(bodyRowLabel(0)).toHaveTextContent('Ada')
+  })
+
+  it('falls back to plain text when the column cannot sort', () => {
+    const noSortColumns: ColumnDef<Invoice>[] = [
+      {
+        accessorKey: 'customer',
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Full name" />,
+        enableSorting: false,
+      },
+    ]
+    render(<DataTable columns={noSortColumns} data={rows} pageSize={10} enableSorting />)
+    expect(screen.queryByRole('button', { name: 'Full name' })).not.toBeInTheDocument()
+    expect(screen.getByText('Full name')).toBeInTheDocument()
   })
 })
 

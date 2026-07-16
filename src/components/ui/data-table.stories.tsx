@@ -4,6 +4,7 @@ import type { ColumnDef, PaginationState } from '@tanstack/react-table'
 import { expect, userEvent, within } from 'storybook/test'
 import {
   DataTable,
+  DataTableColumnHeader,
   DataTableFacetedFilter,
   DataTableToolbar,
   dataTableFacetedFilterFn,
@@ -137,6 +138,13 @@ export const StickyHeader: Story = {
 export const Sorting: Story = {
   render: () => (
     <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableSorting</code> auto-wraps every plain-string column header with a sortable{' '}
+        <code>DataTableColumnHeader</code>. Click a header to toggle asc/desc; hold Shift and
+        click a second header to add it to a multi-column sort (
+        <code>column.getToggleSortingHandler()</code> handles this natively). The caret menu also
+        offers explicit Asc / Desc / Hide actions.
+      </p>
       <DataTable columns={columns} data={ROWS} pageSize={10} enableSorting />
     </div>
   ),
@@ -154,6 +162,14 @@ export const SearchFilterAndViewOptions: Story = {
   name: 'Search, faceted filter & view options',
   render: () => (
     <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        The three toolbar pieces composed together via <code>renderToolbar</code>: a debounced
+        search box (<code>enableGlobalFilter</code>), a <code>DataTableFacetedFilter</code> for
+        Status (wired to <code>dataTableFacetedFilterFn</code> on the column), and{' '}
+        <code>DataTableViewOptions</code> (rendered automatically by{' '}
+        <code>DataTableToolbar</code>). See <strong>Faceted filter only</strong> and{' '}
+        <strong>Column visibility only</strong> for each piece in isolation.
+      </p>
       <DataTable
         columns={columns}
         data={ROWS}
@@ -174,9 +190,54 @@ export const SearchFilterAndViewOptions: Story = {
   ),
 }
 
+export const ColumnFiltersOnly: Story = {
+  name: 'Faceted filter only',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>DataTableFacetedFilter</code> composed alone via <code>renderToolbar</code> — no
+        search box or view options required. Per-option counts come from{' '}
+        <code>column.getFacetedUniqueValues()</code>, which needs client-side mode (no{' '}
+        <code>pageCount</code>).
+      </p>
+      <DataTable
+        columns={columns}
+        data={ROWS}
+        pageSize={10}
+        renderToolbar={(table) => (
+          <DataTableFacetedFilter
+            column={table.getColumn('status')}
+            title="Status"
+            options={STATUS_OPTIONS}
+          />
+        )}
+      />
+    </div>
+  ),
+}
+
+export const ViewOptionsOnly: Story = {
+  name: 'Column visibility only',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableViewOptions</code> shows the "View" dropdown on its own — it's independent of{' '}
+        <code>enableGlobalFilter</code>. The "Amount" column has a custom function{' '}
+        <code>header</code>, so it's named for this menu via <code>meta: {'{'} label: 'Amount' {'}'}</code>.
+      </p>
+      <DataTable columns={columns} data={ROWS} pageSize={10} enableViewOptions />
+    </div>
+  ),
+}
+
 export const RowSelection: Story = {
   render: () => (
     <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableRowSelection</code> adds a checkbox column with an indeterminate select-all
+        state and a "X of Y row(s) selected." summary. <code>getRowId</code> keys the selection so
+        it's stable if rows re-sort or the data changes.
+      </p>
       <DataTable
         columns={columns}
         data={ROWS.slice(0, 10)}
@@ -193,9 +254,78 @@ export const RowSelection: Story = {
   },
 }
 
+export const RowSelectionWithPredicate: Story = {
+  name: 'Row selection — per-row predicate',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableRowSelection</code> also accepts <code>(row) =&gt; boolean</code> — here,
+        "Unpaid" rows can't be selected (their checkbox is disabled and excluded from
+        select-all).
+      </p>
+      <DataTable
+        columns={columns}
+        data={ROWS.slice(0, 10)}
+        pageSize={10}
+        enableRowSelection={(row) => row.original.status !== 'Unpaid'}
+        getRowId={(row) => row.id}
+      />
+    </div>
+  ),
+}
+
+const customColumns: ColumnDef<Invoice>[] = [
+  {
+    accessorKey: 'id',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Invoice #" />,
+  },
+  { accessorKey: 'status', header: 'Status', filterFn: dataTableFacetedFilterFn },
+  {
+    accessorKey: 'amount',
+    header: () => <div className="text-right">Amount</div>,
+    cell: ({ row }) => <div className="text-right">${row.original.amount.toFixed(2)}</div>,
+    meta: { label: 'Amount' },
+  },
+]
+
+export const CustomComposition: Story = {
+  name: 'Custom composition (building blocks)',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        Full manual control, without <code>DataTable</code>'s auto-wrap or default toolbar: the
+        "Invoice #" column renders <code>DataTableColumnHeader</code> directly with a custom
+        title, and <code>renderToolbar</code> returns hand-rolled markup (not{' '}
+        <code>DataTableToolbar</code>) mixing a plain count label with{' '}
+        <code>DataTableFacetedFilter</code>.
+      </p>
+      <DataTable
+        columns={customColumns}
+        data={ROWS}
+        pageSize={10}
+        enableSorting
+        renderToolbar={(table) => (
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">{ROWS.length} invoices</span>
+            <DataTableFacetedFilter
+              column={table.getColumn('status')}
+              title="Status"
+              options={STATUS_OPTIONS}
+            />
+          </div>
+        )}
+      />
+    </div>
+  ),
+}
+
 export const KitchenSink: Story = {
   render: () => (
     <div className="w-[700px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        Every Phase 1 feature at once: sorting, search, faceted filter, view options, and row
+        selection.
+      </p>
       <DataTable
         columns={columns}
         data={ROWS}
