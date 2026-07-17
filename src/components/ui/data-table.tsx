@@ -5,19 +5,26 @@ import {
   type Column,
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnPinningState,
+  type ExpandedState,
+  type GroupingState,
   type PaginationState,
   type Row,
   type RowData,
   type RowSelectionState,
   type SortingState,
   type Table,
+  type TableMeta,
   type Updater,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
+  getGroupedRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -25,10 +32,14 @@ import {
 import {
   ArrowDown,
   ArrowUp,
+  ChevronRight,
   ChevronsUpDown,
+  Download,
   EyeOff,
   Loader2,
   MoreVertical,
+  Pin,
+  PinOff,
   Search,
   SlidersHorizontal,
   X,
@@ -37,14 +48,17 @@ import {
 import { cn } from '#lib/utils'
 import { useControllableState } from '#hooks/use-controllable-state'
 import { paginationView } from '#lib/pagination-view'
+import { exportTableToCsv } from '#lib/data-table-export'
 import {
   Table as TablePrimitive,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '#components/ui/table'
+import { Skeleton } from '#components/ui/skeleton'
 import { Button } from '#components/ui/button'
 import { Badge } from '#components/ui/badge'
 import { Checkbox } from '#components/ui/checkbox'
@@ -91,6 +105,46 @@ function columnLabel<TData, TValue>(column: Column<TData, TValue>): string {
   const header = column.columnDef.header
   if (typeof header === 'string') return header
   return column.id
+}
+
+// CSV / clipboard helpers (see src/lib/data-table-export.ts).
+export {
+  exportTableToCsv,
+  tableToCsv,
+  selectionToTsv,
+  copySelectionAsTsv,
+  serializeCsv,
+  serializeTsv,
+} from '#lib/data-table-export'
+
+/**
+ * Sticky offsets + layering for a pinned column's cells. Only meaningful
+ * when the table applies column sizing (pinning/resizing enabled), since
+ * the offsets derive from column sizes.
+ */
+function pinnedCellStyle<TData, TValue>(
+  column: Column<TData, TValue>
+): React.CSSProperties | undefined {
+  const pinned = column.getIsPinned()
+  if (!pinned) return undefined
+  return {
+    position: 'sticky',
+    zIndex: 1,
+    left: pinned === 'left' ? column.getStart('left') : undefined,
+    right: pinned === 'right' ? column.getAfter('right') : undefined,
+  }
+}
+
+function pinnedCellClass<TData, TValue>(column: Column<TData, TValue>): string | undefined {
+  const pinned = column.getIsPinned()
+  if (!pinned) return undefined
+  // Solid surface so scrolled content doesn't show through, plus a boundary
+  // border on the scroll-facing edge.
+  return cn(
+    'bg-background',
+    pinned === 'left' && column.getIsLastColumn('left') && 'border-r',
+    pinned === 'right' && column.getIsFirstColumn('right') && 'border-l'
+  )
 }
 
 /**
@@ -172,6 +226,35 @@ export function DataTableColumnHeader<TData, TValue>({
           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
             <ArrowDown /> Sort descending
           </DropdownMenuItem>
+          {column.getCanGroup() ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={column.getToggleGroupingHandler()}>
+                <ChevronsUpDown />
+                {column.getIsGrouped() ? 'Ungroup' : 'Group by this column'}
+              </DropdownMenuItem>
+            </>
+          ) : null}
+          {column.getCanPin() ? (
+            <>
+              <DropdownMenuSeparator />
+              {column.getIsPinned() !== 'left' ? (
+                <DropdownMenuItem onClick={() => column.pin('left')}>
+                  <Pin /> Pin left
+                </DropdownMenuItem>
+              ) : null}
+              {column.getIsPinned() !== 'right' ? (
+                <DropdownMenuItem onClick={() => column.pin('right')}>
+                  <Pin className="rotate-90" /> Pin right
+                </DropdownMenuItem>
+              ) : null}
+              {column.getIsPinned() ? (
+                <DropdownMenuItem onClick={() => column.pin(false)}>
+                  <PinOff /> Unpin
+                </DropdownMenuItem>
+              ) : null}
+            </>
+          ) : null}
           {column.getCanHide() ? (
             <>
               <DropdownMenuSeparator />
@@ -314,6 +397,124 @@ export function DataTableFacetedFilter<TData, TValue>({
   )
 }
 
+export interface DataTableRangeFilterProps<TData, TValue> {
+  column?: Column<TData, TValue>
+  title: string
+  /** Increment for the number inputs. Default 1. */
+  step?: number
+}
+
+/**
+ * Min/max range filter for numeric columns. Pair the target column with
+ * TanStack's built-in filter: `filterFn: 'inNumberRange'`. Placeholders show
+ * the column's actual min/max (via `getFacetedMinMaxValues()`, client-side
+ * mode only).
+ */
+export function DataTableRangeFilter<TData, TValue>({
+  column,
+  title,
+  step = 1,
+}: DataTableRangeFilterProps<TData, TValue>) {
+  const value = (column?.getFilterValue() as [number?, number?] | undefined) ?? [
+    undefined,
+    undefined,
+  ]
+  const [min, max] = value
+  const facetedRange = column?.getFacetedMinMaxValues()
+  const isActive = min !== undefined || max !== undefined
+
+  const setBound = (index: 0 | 1, raw: string) => {
+    const next: [number?, number?] = [...value]
+    next[index] = raw === '' ? undefined : Number(raw)
+    column?.setFilterValue(next[0] === undefined && next[1] === undefined ? undefined : next)
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button variant="outline" size="sm" className="gap-1.5 border-dashed">
+            {title}
+            {isActive ? (
+              <>
+                <Separator orientation="vertical" className="h-4" />
+                <Badge variant="secondary" className="rounded-sm px-1.5 font-normal">
+                  {min ?? '…'}–{max ?? '…'}
+                </Badge>
+              </>
+            ) : null}
+          </Button>
+        }
+      />
+      <PopoverContent className="w-56" align="start">
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            inputMode="decimal"
+            step={step}
+            value={min ?? ''}
+            onChange={(event) => setBound(0, event.target.value)}
+            placeholder={facetedRange ? String(facetedRange[0]) : 'Min'}
+            aria-label={`${title} minimum`}
+            className="h-8"
+          />
+          <span className="text-muted-foreground text-sm">to</span>
+          <Input
+            type="number"
+            inputMode="decimal"
+            step={step}
+            value={max ?? ''}
+            onChange={(event) => setBound(1, event.target.value)}
+            placeholder={facetedRange ? String(facetedRange[1]) : 'Max'}
+            aria-label={`${title} maximum`}
+            className="h-8"
+          />
+        </div>
+        {isActive ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-center"
+            onClick={() => column?.setFilterValue(undefined)}
+          >
+            Clear filter
+          </Button>
+        ) : null}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+export interface DataTableExportButtonProps<TData> {
+  table: Table<TData>
+  /** Download filename. Default "export.csv". */
+  filename?: string
+  className?: string
+}
+
+/**
+ * Downloads the table's current view (visible columns, filtered + sorted
+ * rows across all pages in client mode; the current page in server mode)
+ * as a UTF-8 CSV.
+ */
+export function DataTableExportButton<TData>({
+  table,
+  filename,
+  className,
+}: DataTableExportButtonProps<TData>) {
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className={cn('gap-1.5', className)}
+      onClick={() => exportTableToCsv(table, filename)}
+    >
+      <Download className="size-3.5" aria-hidden="true" />
+      Export CSV
+    </Button>
+  )
+}
+
 export interface DataTableToolbarProps<TData> {
   table: Table<TData>
   searchPlaceholder?: string
@@ -321,6 +522,8 @@ export interface DataTableToolbarProps<TData> {
   className?: string
   /** Render {@link DataTableViewOptions} on the trailing edge. Default true. */
   showViewOptions?: boolean
+  /** Render a CSV export button on the trailing edge. Pass a string to set the filename. */
+  csvExport?: boolean | string
 }
 
 /**
@@ -335,6 +538,7 @@ export function DataTableToolbar<TData>({
   children,
   className,
   showViewOptions = true,
+  csvExport = false,
 }: DataTableToolbarProps<TData>) {
   const showSearch = table.options.enableGlobalFilter === true
   const globalFilter = (table.getState().globalFilter as string | undefined) ?? ''
@@ -392,7 +596,15 @@ export function DataTableToolbar<TData>({
           </Button>
         ) : null}
       </div>
-      {showViewOptions ? <DataTableViewOptions table={table} /> : null}
+      <div className="flex items-center gap-2">
+        {csvExport ? (
+          <DataTableExportButton
+            table={table}
+            filename={typeof csvExport === 'string' ? csvExport : undefined}
+          />
+        ) : null}
+        {showViewOptions ? <DataTableViewOptions table={table} /> : null}
+      </div>
     </div>
   )
 }
@@ -535,6 +747,8 @@ export interface DataTableProps<TData, TValue> {
   enableSorting?: boolean
   /** Controlled sorting state. */
   sorting?: SortingState
+  /** Uncontrolled initial sorting, e.g. `[{ id: 'date', desc: true }]`. */
+  defaultSorting?: SortingState
   onSortingChange?: (state: SortingState) => void
 
   /** Enable the built-in global search box in the default toolbar. Default false. */
@@ -547,12 +761,16 @@ export interface DataTableProps<TData, TValue> {
 
   /** Controlled column filters state (drive with `DataTableFacetedFilter` or your own inputs). */
   columnFilters?: ColumnFiltersState
+  /** Uncontrolled initial column filters. */
+  defaultColumnFilters?: ColumnFiltersState
   onColumnFiltersChange?: (state: ColumnFiltersState) => void
 
   /** Show the "View" column-visibility dropdown in the default toolbar. Default false. */
   enableViewOptions?: boolean
   /** Controlled column visibility state. */
   columnVisibility?: VisibilityState
+  /** Uncontrolled initial column visibility, e.g. `{ internalId: false }`. */
+  defaultColumnVisibility?: VisibilityState
   onColumnVisibilityChange?: (state: VisibilityState) => void
 
   /** Enable row selection (adds a checkbox column). Default false. */
@@ -575,6 +793,80 @@ export interface DataTableProps<TData, TValue> {
 
   /** Stick the header row to the top of a scrollable (max-height) wrapper. Default false. */
   stickyHeader?: boolean
+
+  /**
+   * Fires when a row is clicked (or activated with Enter). Clicks on
+   * interactive elements inside the row (buttons, links, checkboxes…) are
+   * ignored. Adds a pointer cursor and makes rows focusable.
+   */
+  onRowClick?: (row: Row<TData>) => void
+
+  /** Enable drag-to-resize column widths. Default false. Applies explicit widths to all columns. */
+  enableColumnResizing?: boolean
+  /**
+   * Enable pin-left/pin-right actions in each column's header menu (requires
+   * `enableSorting` or a manual `DataTableColumnHeader` so the menu exists).
+   * Pinned columns stay sticky under horizontal scroll. Applies explicit
+   * widths to all columns. Default false.
+   */
+  enableColumnPinning?: boolean
+  /** Controlled column pinning state. */
+  columnPinning?: ColumnPinningState
+  /** Uncontrolled initial pinning, e.g. `{ left: ['name'] }`. */
+  defaultColumnPinning?: ColumnPinningState
+  onColumnPinningChange?: (state: ColumnPinningState) => void
+
+  /**
+   * Renders an expandable detail panel per row (adds a chevron column).
+   * Mutually exclusive with `getSubRows`.
+   */
+  renderDetail?: (row: Row<TData>) => React.ReactNode
+  /**
+   * Tree data: returns a row's children (adds a chevron column with
+   * depth indenting). Client-side mode only. Mutually exclusive with
+   * `renderDetail`.
+   */
+  getSubRows?: (row: TData) => TData[] | undefined
+  /** Controlled expanded state (for `renderDetail` / `getSubRows`). */
+  expanded?: ExpandedState
+  /** Uncontrolled initial expanded state, e.g. `true` to expand all. */
+  defaultExpanded?: ExpandedState
+  onExpandedChange?: (state: ExpandedState) => void
+
+  /**
+   * Enable row grouping (adds "Group by" to column header menus). Grouped
+   * rows render a toggle with the group value and row count; other cells
+   * render `aggregatedCell` / `aggregationFn` results. Client-side mode
+   * only. Default false.
+   */
+  enableGrouping?: boolean
+  /** Controlled grouping state (column ids). */
+  grouping?: GroupingState
+  /** Uncontrolled initial grouping, e.g. `['status']`. */
+  defaultGrouping?: GroupingState
+  onGroupingChange?: (state: GroupingState) => void
+
+  /** Show a CSV export button in the default toolbar. Pass a string to set the filename. Default false. */
+  enableCsvExport?: boolean | string
+
+  /**
+   * Error state: replaces the table body with the given message and an
+   * optional Retry button (`onRetry`). Takes precedence over `loading`.
+   */
+  error?: React.ReactNode
+  onRetry?: () => void
+  /**
+   * When `loading` is true and there are no rows yet, render this many
+   * skeleton rows instead of dimming an empty table. Default 5; pass 0 to
+   * disable.
+   */
+  loadingRows?: number
+
+  /**
+   * Passed through to TanStack as `table.options.meta` — e.g. an
+   * `updateData` handler that editable cell renderers commit through.
+   */
+  meta?: TableMeta<TData>
 }
 
 /**
@@ -622,15 +914,18 @@ export function DataTable<TData, TValue>({
   className,
   enableSorting = false,
   sorting: sortingProp,
+  defaultSorting,
   onSortingChange,
   enableGlobalFilter = false,
   globalFilter: globalFilterProp,
   onGlobalFilterChange,
   searchPlaceholder,
   columnFilters: columnFiltersProp,
+  defaultColumnFilters,
   onColumnFiltersChange,
   enableViewOptions = false,
   columnVisibility: columnVisibilityProp,
+  defaultColumnVisibility,
   onColumnVisibilityChange,
   enableRowSelection = false,
   rowSelection: rowSelectionProp,
@@ -638,8 +933,29 @@ export function DataTable<TData, TValue>({
   getRowId,
   renderToolbar,
   stickyHeader = false,
+  onRowClick,
+  enableColumnResizing = false,
+  enableColumnPinning = false,
+  columnPinning: columnPinningProp,
+  defaultColumnPinning,
+  onColumnPinningChange,
+  renderDetail,
+  getSubRows,
+  expanded: expandedProp,
+  defaultExpanded,
+  onExpandedChange,
+  enableGrouping = false,
+  grouping: groupingProp,
+  defaultGrouping,
+  onGroupingChange,
+  enableCsvExport = false,
+  error,
+  onRetry,
+  loadingRows = 5,
+  meta,
 }: DataTableProps<TData, TValue>) {
   const isServerSide = pageCount !== undefined
+  const enableExpanding = Boolean(renderDetail || getSubRows)
 
   const [pagination, setPagination] = useControllableState<PaginationState>({
     value: isServerSide ? { pageIndex: pageIndex ?? 0, pageSize } : undefined,
@@ -648,7 +964,7 @@ export function DataTable<TData, TValue>({
   })
   const [sorting, setSorting] = useControllableState<SortingState>({
     value: sortingProp,
-    defaultValue: [],
+    defaultValue: defaultSorting ?? [],
     onChange: onSortingChange,
   })
   const [globalFilter, setGlobalFilter] = useControllableState<string | undefined>({
@@ -658,18 +974,33 @@ export function DataTable<TData, TValue>({
   })
   const [columnFilters, setColumnFilters] = useControllableState<ColumnFiltersState>({
     value: columnFiltersProp,
-    defaultValue: [],
+    defaultValue: defaultColumnFilters ?? [],
     onChange: onColumnFiltersChange,
   })
   const [columnVisibility, setColumnVisibility] = useControllableState<VisibilityState>({
     value: columnVisibilityProp,
-    defaultValue: {},
+    defaultValue: defaultColumnVisibility ?? {},
     onChange: onColumnVisibilityChange,
   })
   const [rowSelection, setRowSelection] = useControllableState<RowSelectionState>({
     value: rowSelectionProp,
     defaultValue: {},
     onChange: onRowSelectionChange,
+  })
+  const [expanded, setExpanded] = useControllableState<ExpandedState>({
+    value: expandedProp,
+    defaultValue: defaultExpanded ?? {},
+    onChange: onExpandedChange,
+  })
+  const [grouping, setGrouping] = useControllableState<GroupingState>({
+    value: groupingProp,
+    defaultValue: defaultGrouping ?? [],
+    onChange: onGroupingChange,
+  })
+  const [columnPinning, setColumnPinning] = useControllableState<ColumnPinningState>({
+    value: columnPinningProp,
+    defaultValue: defaultColumnPinning ?? {},
+    onChange: onColumnPinningChange,
   })
 
   const tableColumns = React.useMemo<ColumnDef<TData, TValue>[]>(() => {
@@ -690,6 +1021,36 @@ export function DataTable<TData, TValue>({
           header: ({ column }) => <DataTableColumnHeader column={column} title={title} />,
         } as ColumnDef<TData, TValue>
       })
+    }
+
+    if (enableExpanding) {
+      const expandColumn: ColumnDef<TData, TValue> = {
+        id: 'expand',
+        header: () => null,
+        cell: ({ row }) =>
+          row.getCanExpand() ? (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={row.getToggleExpandedHandler()}
+              aria-expanded={row.getIsExpanded()}
+              aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
+              style={row.depth > 0 ? { marginLeft: row.depth * 16 } : undefined}
+            >
+              <ChevronRight
+                className={cn('size-4 transition-transform', row.getIsExpanded() && 'rotate-90')}
+                aria-hidden="true"
+              />
+            </Button>
+          ) : row.depth > 0 ? (
+            // Leaf row in a tree: keep the indent so depth stays readable.
+            <span style={{ marginLeft: row.depth * 16 }} />
+          ) : null,
+        enableSorting: false,
+        enableHiding: false,
+        size: 40,
+      }
+      cols = [expandColumn, ...cols]
     }
 
     if (enableRowSelection) {
@@ -719,12 +1080,22 @@ export function DataTable<TData, TValue>({
     }
 
     return cols
-  }, [columns, enableSorting, enableRowSelection])
+  }, [columns, enableSorting, enableRowSelection, enableExpanding])
 
   const table = useReactTable<TData>({
     data,
     columns: tableColumns,
-    state: { pagination, sorting, globalFilter, columnFilters, columnVisibility, rowSelection },
+    state: {
+      pagination,
+      sorting,
+      globalFilter,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+      expanded,
+      grouping,
+      columnPinning,
+    },
     onPaginationChange: (updater) => setPagination(resolveUpdater(updater, pagination)),
     onSortingChange: (updater) => setSorting(resolveUpdater(updater, sorting)),
     onGlobalFilterChange: (updater) => setGlobalFilter(resolveUpdater(updater, globalFilter)),
@@ -732,13 +1103,31 @@ export function DataTable<TData, TValue>({
     onColumnVisibilityChange: (updater) =>
       setColumnVisibility(resolveUpdater(updater, columnVisibility)),
     onRowSelectionChange: (updater) => setRowSelection(resolveUpdater(updater, rowSelection)),
+    onExpandedChange: (updater) => setExpanded(resolveUpdater(updater, expanded)),
+    onGroupingChange: (updater) => setGrouping(resolveUpdater(updater, grouping)),
+    onColumnPinningChange: (updater) => setColumnPinning(resolveUpdater(updater, columnPinning)),
     manualPagination: isServerSide,
     manualSorting: isServerSide,
     manualFiltering: isServerSide,
+    manualGrouping: isServerSide,
     enableSorting,
     enableGlobalFilter,
     enableRowSelection,
+    enableColumnResizing,
+    columnResizeMode: 'onChange',
+    // TanStack defaults these to true; gate them behind our explicit props
+    // so the header-menu items only appear when opted in.
+    enableColumnPinning,
+    enableGrouping,
     getRowId,
+    getSubRows,
+    meta,
+    // A detail panel makes every row expandable; tree data derives it from
+    // getSubRows instead.
+    getRowCanExpand: renderDetail && !getSubRows ? () => true : undefined,
+    ...(enableExpanding || enableGrouping
+      ? { getExpandedRowModel: getExpandedRowModel() }
+      : {}),
     ...(isServerSide
       ? { pageCount }
       : {
@@ -747,11 +1136,85 @@ export function DataTable<TData, TValue>({
           getFilteredRowModel: getFilteredRowModel(),
           getFacetedRowModel: getFacetedRowModel(),
           getFacetedUniqueValues: getFacetedUniqueValues(),
+          getFacetedMinMaxValues: getFacetedMinMaxValues(),
+          ...(enableGrouping ? { getGroupedRowModel: getGroupedRowModel() } : {}),
         }),
     getCoreRowModel: getCoreRowModel(),
   })
 
-  const showDefaultToolbar = !renderToolbar && (enableGlobalFilter || enableViewOptions)
+  const showDefaultToolbar =
+    !renderToolbar && (enableGlobalFilter || enableViewOptions || Boolean(enableCsvExport))
+  // Pinned offsets and resize deltas only make sense with explicit widths.
+  const applySizing = enableColumnResizing || enableColumnPinning
+
+  // Column widths only apply when a sizing feature is on. (TanStack merges
+  // a default `size: 150` into every resolved columnDef, so "did the consumer
+  // set size?" is not reliably detectable — and unconditionally applying it
+  // would freeze every existing table's natural auto-layout at 150px.)
+  const columnWidth = (column: Column<TData, unknown>): React.CSSProperties | undefined =>
+    applySizing ? { width: column.getSize() } : undefined
+
+  const visibleColumnCount = table.getVisibleLeafColumns().length || 1
+  const hasFooter = table
+    .getAllLeafColumns()
+    .some((column) => column.columnDef.footer !== undefined)
+
+  const rowClickHandlers = (row: Row<TData>) =>
+    onRowClick
+      ? {
+          onClick: (event: React.MouseEvent<HTMLTableRowElement>) => {
+            const target = event.target as HTMLElement
+            // Ignore clicks on interactive content inside the row.
+            if (
+              target.closest(
+                'button, a, input, select, textarea, [role="checkbox"], [role="combobox"], [role="menu"], [role="menuitem"]'
+              )
+            )
+              return
+            onRowClick(row)
+          },
+          onKeyDown: (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+            if (event.key === 'Enter' && event.target === event.currentTarget) onRowClick(row)
+          },
+          tabIndex: 0,
+        }
+      : {}
+
+  const renderCellContent = (row: Row<TData>, cell: ReturnType<Row<TData>['getVisibleCells']>[number]) => {
+    // The grouped/aggregated/placeholder cell states are only meaningful
+    // under row grouping. TanStack also reports `getIsAggregated()` for any
+    // row with subRows — which tree data (`getSubRows`) produces — so gate
+    // the whole branch, or tree parents would render through the default
+    // `aggregatedCell` (getValue → empty for the expand/utility columns).
+    if (!enableGrouping) {
+      return flexRender(cell.column.columnDef.cell, cell.getContext())
+    }
+    if (cell.getIsGrouped()) {
+      return (
+        <button
+          type="button"
+          onClick={row.getToggleExpandedHandler()}
+          aria-expanded={row.getIsExpanded()}
+          className="flex items-center gap-1.5 font-medium"
+        >
+          <ChevronRight
+            className={cn('size-4 transition-transform', row.getIsExpanded() && 'rotate-90')}
+            aria-hidden="true"
+          />
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          <span className="text-muted-foreground font-normal">({row.subRows.length})</span>
+        </button>
+      )
+    }
+    if (cell.getIsAggregated()) {
+      return flexRender(
+        cell.column.columnDef.aggregatedCell ?? cell.column.columnDef.cell,
+        cell.getContext()
+      )
+    }
+    if (cell.getIsPlaceholder()) return null
+    return flexRender(cell.column.columnDef.cell, cell.getContext())
+  }
 
   return (
     <div className={cn('space-y-3', className)} aria-busy={loading || undefined}>
@@ -762,6 +1225,7 @@ export function DataTable<TData, TValue>({
           table={table}
           searchPlaceholder={searchPlaceholder}
           showViewOptions={enableViewOptions}
+          csvExport={enableCsvExport}
         />
       ) : null}
 
@@ -772,15 +1236,23 @@ export function DataTable<TData, TValue>({
             'max-h-[32rem] overflow-auto [&_[data-slot=table-container]]:overflow-visible'
         )}
       >
-        <TablePrimitive className={cn('transition-opacity', loading && 'opacity-60')}>
+        <TablePrimitive
+          className={cn('transition-opacity', loading && 'opacity-60')}
+          style={applySizing ? { width: table.getTotalSize(), minWidth: '100%' } : undefined}
+        >
           <TableHeader
-            className={cn(stickyHeader && 'sticky top-0 z-10 bg-card shadow-2xs')}
+            className={cn(stickyHeader && 'sticky top-0 z-10 bg-background shadow-2xs')}
           >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
+                    className={cn(
+                      enableColumnResizing && 'relative',
+                      pinnedCellClass(header.column)
+                    )}
+                    style={{ ...columnWidth(header.column), ...pinnedCellStyle(header.column) }}
                     aria-sort={
                       header.column.getCanSort()
                         ? header.column.getIsSorted() === 'asc'
@@ -794,26 +1266,76 @@ export function DataTable<TData, TValue>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
+                    {enableColumnResizing && header.column.getCanResize() ? (
+                      <div
+                        role="separator"
+                        aria-orientation="vertical"
+                        aria-label={`Resize ${columnLabel(header.column)} column`}
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                        onDoubleClick={() => header.column.resetSize()}
+                        className={cn(
+                          'absolute top-0 right-0 h-full w-1.5 cursor-col-resize touch-none select-none',
+                          'bg-border opacity-0 transition-opacity hover:opacity-100',
+                          header.column.getIsResizing() && 'bg-ring opacity-100'
+                        )}
+                      />
+                    ) : null}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
+            {error !== undefined && error !== null ? (
+              <TableRow>
+                <TableCell colSpan={visibleColumnCount} className="py-8 text-center">
+                  <div className="text-destructive text-sm">{error}</div>
+                  {onRetry ? (
+                    <Button variant="outline" size="sm" className="mt-3" onClick={onRetry}>
+                      Retry
+                    </Button>
+                  ) : null}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? 'selected' : undefined}
-                  // `data-state` drives the actual selected-row styling.
-                  // `aria-selected` is supplementary here — it's only
-                  // formally defined for grid/treegrid rows, but is
-                  // harmless progressive enhancement on a plain table.
-                  aria-selected={enableRowSelection ? row.getIsSelected() : undefined}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                <React.Fragment key={row.id}>
+                  <TableRow
+                    data-state={row.getIsSelected() ? 'selected' : undefined}
+                    // `data-state` drives the actual selected-row styling.
+                    // `aria-selected` is supplementary here — it's only
+                    // formally defined for grid/treegrid rows, but is
+                    // harmless progressive enhancement on a plain table.
+                    aria-selected={enableRowSelection ? row.getIsSelected() : undefined}
+                    className={cn(onRowClick && 'cursor-pointer')}
+                    {...rowClickHandlers(row)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={pinnedCellClass(cell.column)}
+                        style={{ ...columnWidth(cell.column), ...pinnedCellStyle(cell.column) }}
+                      >
+                        {renderCellContent(row, cell)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {renderDetail && !getSubRows && row.getIsExpanded() ? (
+                    <TableRow data-slot="table-detail-row" className="hover:bg-transparent">
+                      <TableCell colSpan={visibleColumnCount} className="bg-muted/30 px-4 py-3">
+                        {renderDetail(row)}
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </React.Fragment>
+              ))
+            ) : loading && loadingRows > 0 ? (
+              Array.from({ length: loadingRows }, (_, index) => (
+                <TableRow key={index}>
+                  {table.getVisibleLeafColumns().map((column) => (
+                    <TableCell key={column.id}>
+                      <Skeleton className="h-4 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -821,7 +1343,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={tableColumns.length}
+                  colSpan={visibleColumnCount}
                   className="text-muted-foreground py-8 text-center"
                 >
                   {emptyMessage}
@@ -829,6 +1351,25 @@ export function DataTable<TData, TValue>({
               </TableRow>
             )}
           </TableBody>
+          {hasFooter ? (
+            <TableFooter>
+              {table.getFooterGroups().map((footerGroup) => (
+                <TableRow key={footerGroup.id}>
+                  {footerGroup.headers.map((header) => (
+                    <TableCell
+                      key={header.id}
+                      className={pinnedCellClass(header.column)}
+                      style={{ ...columnWidth(header.column), ...pinnedCellStyle(header.column) }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.footer, header.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableFooter>
+          ) : null}
         </TablePrimitive>
       </div>
 

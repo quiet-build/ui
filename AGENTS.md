@@ -4,7 +4,7 @@ This file tells AI agents (Claude Code, Cursor, Copilot, Codex, etc.) how to use
 
 ## What this library is
 
-`@quietbuildlab/ui` is a themed shadcn/ui component library that ships **six ready-made themes** (Manuscript, Midnight, Slate, Sunset, Ocean, Mono) and **31 React components** built on Radix UI primitives plus a TanStack-powered `DataTable`. Themes are swappable per app via a single CSS import, or at runtime via a `data-theme` attribute on `<html>`. Re-themable further via CSS variable overrides.
+`@quietbuildlab/ui` is a themed shadcn/ui component library that ships **six ready-made themes** (Manuscript, Midnight, Slate, Sunset, Ocean, Mono) and **32 React components** built on Radix UI primitives plus a TanStack-powered `DataTable` and a virtualized `DataGrid` (100k+ rows). Themes are swappable per app via a single CSS import, or at runtime via a `data-theme` attribute on `<html>`. Re-themable further via CSS variable overrides.
 
 ## Install in a consumer app
 
@@ -65,9 +65,9 @@ import {
 
 Do NOT deep-import (no `from '@quietbuildlab/ui/dist/...'`).
 
-## Components shipped (31)
+## Components shipped (32)
 
-Accordion, Alert, AlertDialog, Avatar, Badge, Button, Calendar, Card, Checkbox, DataTable, DatePicker, Dialog, DropdownMenu, FilePicker, Input, Label, Pagination, Popover, Progress, RadioGroup, Select, Separator, Sheet, Skeleton, Slider, Switch, Table, Tabs, Textarea, Toaster, Tooltip.
+Accordion, Alert, AlertDialog, Avatar, Badge, Button, Calendar, Card, Checkbox, DataGrid, DataTable, DatePicker, Dialog, DropdownMenu, FilePicker, Input, Label, Pagination, Popover, Progress, RadioGroup, Select, Separator, Sheet, Skeleton, Slider, Switch, Table, Tabs, Textarea, Toaster, Tooltip.
 
 ## Dark mode
 
@@ -167,7 +167,7 @@ return (
 
 `columns: ColumnDef<TData>[]` types come from `@tanstack/react-table` (a transitive dep — consumers `import type { ColumnDef } from '@tanstack/react-table'` directly).
 
-**Sorting, search, filtering, column visibility, row selection** are opt-in via props (`enableSorting`, `enableGlobalFilter`, `enableViewOptions`, `enableRowSelection`, plus controlled `columnFilters`/`columnVisibility`/`rowSelection` state) — all off by default, so existing usages are unaffected. The default toolbar (search box + "View" dropdown) only renders when `enableGlobalFilter` or `enableViewOptions` is set — every hideable column being a candidate for the View menu doesn't count as opting in. In server-side mode these are manual too: the table only fires `onSortingChange`/`onColumnFiltersChange`/`onGlobalFilterChange`, it never sorts/filters locally. `DataTable` also exports its building blocks (`DataTableColumnHeader`, `DataTableToolbar`, `DataTableFacetedFilter`, `DataTableViewOptions`, `DataTablePagination`, `dataTableFacetedFilterFn`) for composing a custom table via `renderToolbar` or your own `useReactTable()` call. Full reference: `src/components/ui/data-table.md`.
+**Every feature is opt-in via props** — sorting, search, filtering (faceted + number range), column visibility, row selection, row click, column pinning/resizing, expandable detail rows, tree data (`getSubRows`), grouping + aggregation, footer rows, CSV export, error/skeleton states — all off by default, so existing usages are unaffected. Each stateful feature follows the same pattern: uncontrolled with a `default*` seed, or controlled via `value` + `on*Change`. The default toolbar only renders when `enableGlobalFilter`, `enableViewOptions`, or `enableCsvExport` is set. In server-side mode, sorting/filtering/grouping are manual: the table only fires the `on*Change` callbacks, never processing locally (grouping, tree data, and faceted counts are client-side-only). `DataTable` also exports its building blocks (`DataTableColumnHeader`, `DataTableToolbar`, `DataTableFacetedFilter`, `DataTableRangeFilter`, `DataTableViewOptions`, `DataTablePagination`, `DataTableExportButton`, `dataTableFacetedFilterFn`, CSV/TSV helpers) for composing a custom table via `renderToolbar` or your own `useReactTable()` call. For 100k+ rows use `DataGrid` (virtualized via `@tanstack/react-virtual`, infinite scroll via `onReachEnd`/`hasMore`; client-side only). Full reference: `src/components/ui/data-table.md` and `src/components/ui/data-grid.md`.
 
 ## Common pitfalls
 

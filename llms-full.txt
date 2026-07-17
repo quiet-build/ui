@@ -1,7 +1,7 @@
 # @quietbuildlab/ui — Full API Reference
 
 > Themed shadcn/ui component library. Ships six ready-made themes (Manuscript, Midnight,
-> Slate, Sunset, Ocean, Mono), each light + dark, and 31 components on Radix UI + Tailwind v4.
+> Slate, Sunset, Ocean, Mono), each light + dark, and 32 components on Radix UI + Tailwind v4.
 > Pick a theme with one CSS import or switch at runtime via `data-theme`. Re-themable further
 > via CSS variable overrides.
 
@@ -604,6 +604,7 @@ interface DataTableProps<TData, TValue> {
 
   enableSorting?: boolean                // default false — sortable string headers auto-wrap
   sorting?: SortingState
+  defaultSorting?: SortingState          // uncontrolled initial sort
   onSortingChange?: (state: SortingState) => void
 
   enableGlobalFilter?: boolean           // default false — shows the built-in search box
@@ -625,8 +626,36 @@ interface DataTableProps<TData, TValue> {
 
   renderToolbar?: (table: Table<TData>) => React.ReactNode  // replaces the default toolbar
   stickyHeader?: boolean                 // default false
+
+  onRowClick?: (row: Row<TData>) => void          // row click/Enter; ignores inner controls
+  enableColumnResizing?: boolean                   // drag handles; explicit widths
+  enableColumnPinning?: boolean                    // Pin left/right in column menus
+  columnPinning?: ColumnPinningState
+  defaultColumnPinning?: ColumnPinningState        // e.g. { left: ['name'] }
+  onColumnPinningChange?: (state: ColumnPinningState) => void
+  renderDetail?: (row: Row<TData>) => React.ReactNode  // expandable detail panel
+  getSubRows?: (row: TData) => TData[] | undefined     // tree data (client-side only)
+  expanded?: ExpandedState
+  defaultExpanded?: ExpandedState                  // `true` expands everything
+  onExpandedChange?: (state: ExpandedState) => void
+  enableGrouping?: boolean                         // "Group by" in menus (client-side only)
+  grouping?: GroupingState
+  defaultGrouping?: GroupingState                  // e.g. ['status']
+  onGroupingChange?: (state: GroupingState) => void
+  enableCsvExport?: boolean | string               // Export button; string = filename
+  defaultColumnFilters?: ColumnFiltersState
+  defaultColumnVisibility?: VisibilityState
+  error?: React.ReactNode                          // error state (takes precedence)
+  onRetry?: () => void                             // Retry button in error state
+  loadingRows?: number                             // skeleton rows when loading && empty (default 5)
+  meta?: TableMeta<TData>                          // table.options.meta (editable cells etc.)
 }
 ```
+
+Additional exports: `DataTableRangeFilter` ({ column?, title, step? } — pair the column with
+`filterFn: 'inNumberRange'`), `DataTableExportButton` ({ table, filename? }), and CSV/TSV
+helpers `tableToCsv(table)`, `exportTableToCsv(table, filename?)`, `selectionToTsv(table)`,
+`copySelectionAsTsv(table)`, `serializeCsv(rows)`, `serializeTsv(rows)`.
 
 In server-side mode (`pageCount` set), sorting and filtering are manual too — the table never
 sorts/filters locally, it only fires the `on*Change` callbacks.
@@ -834,6 +863,76 @@ or "X row(s) selected." server-side (that row model only sees the current page, 
 undercount selections on other pages — `getRowId` still keeps the selection itself correct
 across pages). `enableRowSelection` also accepts a per-row predicate:
 `(row) => row.original.status !== 'archived'`.
+
+### Row click
+
+`onRowClick={(row) => …}` — pointer cursor, focusable rows, Enter activation; clicks on
+interactive elements inside the row (buttons, links, checkboxes) are ignored.
+
+### Column pinning & resizing
+
+`enableColumnPinning` adds Pin left/right/Unpin to column header menus (pair with
+`enableSorting` so menus exist); pinned columns are sticky under horizontal scroll. Seed with
+`defaultColumnPinning={{ left: ['name'] }}`. `enableColumnResizing` adds drag handles
+(double-click resets). Either flag switches to explicit widths from `ColumnDef.size`
+(default 150); without them columns keep natural auto widths and `size` is ignored.
+
+### Expandable detail rows / tree data
+
+`renderDetail={(row) => <Detail />}` adds a chevron column and a full-width panel under
+expanded rows. `getSubRows={(row) => row.children}` renders hierarchies as nested rows with
+depth indenting (client-side only). The two are mutually exclusive. Both use
+`expanded` / `defaultExpanded` (`true` = expand all) / `onExpandedChange`.
+
+### Grouping & aggregation (client-side only)
+
+```tsx
+const columns = [
+  { accessorKey: 'status', header: 'Status' },
+  { accessorKey: 'amount', header: 'Amount', enableGrouping: false,
+    aggregationFn: 'sum', aggregatedCell: ({ getValue }) => `$${getValue<number>()}` },
+]
+<DataTable columns={columns} data={rows} enableGrouping defaultGrouping={['status']} />
+```
+
+Group rows show a toggle + group value + row count; other cells render `aggregatedCell`
+(TanStack aggregationFns: sum, min, max, mean, count, …). Column menus gain "Group by".
+
+### Footer totals
+
+Any column with `footer: ({ table }) => …` produces a tfoot row; the renderer receives the
+live table, so totals can follow the active filter.
+
+### CSV export & clipboard
+
+`enableCsvExport` (or `"filename.csv"`) adds an Export button: visible non-utility columns,
+filtered + sorted rows across all pages (client mode; current page only in server mode),
+UTF-8 BOM. Programmatic: `exportTableToCsv(table, name)`, `tableToCsv(table)`,
+`copySelectionAsTsv(table)` (selected rows → clipboard TSV).
+
+### Error & skeleton states
+
+`error` replaces the body (precedence over rows/loading); `onRetry` adds a Retry button.
+`loading` with zero rows renders `loadingRows` skeleton rows (default 5) instead of dimming.
+
+### Editable cells
+
+Pass `meta={{ updateData }}` and commit from custom cell renderers via
+`table.options.meta.updateData(rowIndex, columnId, value)` (TanStack's documented pattern).
+
+### DataGrid — virtualized sibling (100k+ rows)
+
+```tsx
+import { DataGrid } from '@quietbuildlab/ui'
+<DataGrid columns={columns} data={rows100k} height={480} enableSorting enableGlobalFilter />
+```
+
+Windowed rendering via `@tanstack/react-virtual` — only the visible rows (± `overscan`,
+default 5) are in the DOM; sorting/search still cover the full dataset. No pagination.
+Column widths come from `ColumnDef.size` (default 150). Infinite scroll: pass
+`onReachEnd` + `hasMore` and append the next chunk to `data` (fires once per data length).
+`estimateRowHeight` (default 40) tunes the virtualizer. Client-side only — for server data
+use DataTable. A polite live region announces the row count.
 
 ---
 

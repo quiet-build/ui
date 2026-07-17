@@ -4,13 +4,16 @@
 > researching ag-grid (github.com/ag-grid/ag-grid) and TanStack Table docs.
 > Self-contained: everything needed is in this file plus the repo.
 >
-> **Status: Phase 1 implemented 2026-07-16.** Sorting, global search, faceted
-> column filters, column visibility, row selection, and sticky headers are
-> shipped in `src/components/ui/data-table.tsx` (see companion `.md`, new
-> Storybook stories, and `src/components/__tests__/data-table-features.test.tsx`).
-> Verified: typecheck, full test suite (283 tests), build, and live browser
-> checks in light + dark. Phases 2–4 remain not started and still need the
-> open decisions below answered before work begins.
+> **Status: Phases 1, 1.5, 2, 3, and 4 implemented 2026-07-17** (all except
+> i18n labels, which Ming explicitly descoped, and the Phase-2 date-range
+> filter variant, deferred — number range shipped). Everything builds on
+> TanStack v8 row models per the strategy below; virtualization uses
+> `@tanstack/react-virtual` in the new sibling `DataGrid` component. The
+> "never build" list (pivot, charts, formulas) stands. Verified: typecheck,
+> 339-test suite (51 new), build, Storybook Playwright story tests, and live
+> Chromium checks (pinning under horizontal scroll, grouping, 100k-row
+> DataGrid deep-scroll). Remaining open decision #3 (drag-and-drop column
+> reordering) stays unbuilt — the header-menu/pin approach shipped instead.
 
 ## Why this plan exists
 
@@ -133,6 +136,35 @@ The 80% of ag-grid people actually use daily.
   select-all, filter narrowing.
 - Estimated size: the largest phase; ship as one minor (e.g. 0.9.0).
 
+## Phase 1.5 — Quick wins (review round 2, 2026-07-16; each ≤ ~1h)
+
+Found while re-reviewing the shipped Phase 1. Small, high-leverage, all
+non-breaking:
+
+1. **Uncontrolled initial state** — add `defaultSorting` /
+   `defaultColumnVisibility` / `defaultColumnFilters` props (thread through
+   `useControllableState`'s `defaultValue`). Today "sorted by date desc by
+   default" forces fully-controlled state on the consumer.
+2. **`onRowClick?: (row) => void`** — the single most common consumer need
+   (click row → navigate). Add pointer cursor + keyboard activation when set.
+3. **`labels` prop for i18n** — every UI string is hardcoded English
+   ("Rows per page", "No results.", "Reset", "N row(s) selected", menu
+   items…). Consumers include Chinese-language apps. Partial-override object:
+   `labels={{ rowsPerPage: '每页行数', … }}` with English defaults.
+4. **Stable-reference docs note** — data-table.md must warn that `columns` /
+   `data` should be memoized/stable; fresh arrays every render churn TanStack
+   column instances (perf now, column-state resets once sizing lands).
+5. **Test: filter resets page index** — verified `autoResetPageIndex`
+   defaults on (client mode) so searching while on page 3 correctly jumps
+   back to page 1, but no test locks this behavior in.
+6. **Dead config** — selection column declares `size: 40` but the render
+   layer never calls `header.getSize()`; column sizing is entirely unwired.
+   Either remove the field or (better) wire `getSize()` → `style.width` as
+   the groundwork Phase 2's resizing needs anyway.
+7. *(cosmetic)* sticky header uses `bg-card`; on themes where card ≠
+   background (Manuscript) the pinned header's tint differs subtly from the
+   page. Consider `bg-background`.
+
 ## Phase 2 — Power ergonomics
 
 1. **Column pinning** (left/right sticky columns) and **column resizing**
@@ -152,6 +184,11 @@ The 80% of ag-grid people actually use daily.
    `emptyMessage`; skeleton-rows loading variant; documented recipe story.
 5. **Toolbar recipe story** — compose search + faceted filters + view
    options + export into `Recipes/` as the canonical example.
+6. **Range filters** *(added in review round 2)* — `DataTableFacetedFilter`
+   only covers enum-ish columns; ag-grid ships number/date filters too. Add a
+   `DataTableRangeFilter` (min/max number inputs, TanStack's built-in
+   `inNumberRange` filterFn) and optionally a date-range variant using the
+   existing `Calendar`/`DatePicker` components.
 
 **Acceptance criteria**
 - Pinned columns stay sticky under horizontal scroll with correct z-index and
@@ -202,6 +239,9 @@ any code:
   not a spreadsheet.
 - **Clipboard copy** — "copy selection as TSV" toolbar action is cheap and
   useful; full paste-into-grid is not. Cap scope at copy-only.
+- **Aggregate footer row** *(added in review round 2)* — per-column
+  `aggregationFn` rendered in a `TableFooter` (sum/avg/count). Pairs
+  naturally with grouping; gate together.
 - **Excel (.xlsx) export** — requires a heavy dep (exceljs/SheetJS). If ever
   needed: optional peer dependency + separate export path, never in core.
   CSV (Phase 2) covers most real needs.

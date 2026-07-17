@@ -6,6 +6,7 @@ import {
   DataTable,
   DataTableColumnHeader,
   DataTableFacetedFilter,
+  DataTableRangeFilter,
   DataTableToolbar,
   dataTableFacetedFilterFn,
 } from './data-table'
@@ -344,6 +345,320 @@ export const KitchenSink: Story = {
           </DataTableToolbar>
         )}
       />
+    </div>
+  ),
+}
+
+export const DefaultSortingStory: Story = {
+  name: 'Default sorting (uncontrolled)',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>defaultSorting</code> seeds the initial sort (Amount, descending) without making the
+        state controlled — users can still re-sort freely.
+      </p>
+      <DataTable
+        columns={columns}
+        data={ROWS}
+        pageSize={10}
+        enableSorting
+        defaultSorting={[{ id: 'amount', desc: true }]}
+      />
+    </div>
+  ),
+}
+
+export const ClickableRows: Story = {
+  render: function ClickableRowsExample() {
+    const [lastClicked, setLastClicked] = useState<string | null>(null)
+    return (
+      <div className="w-[600px]">
+        <p className="text-muted-foreground mb-3 text-sm">
+          <code>onRowClick</code> makes rows clickable (pointer cursor, Enter-activatable when
+          focused). Clicks on interactive elements inside a row — like the selection checkbox —
+          are ignored.
+        </p>
+        <p className="mb-3 text-sm font-medium" role="status">
+          {lastClicked ? `Last clicked: ${lastClicked}` : 'Click a row…'}
+        </p>
+        <DataTable
+          columns={columns}
+          data={ROWS.slice(0, 10)}
+          pageSize={10}
+          enableRowSelection
+          getRowId={(row) => row.id}
+          onRowClick={(row) => setLastClicked(row.original.id)}
+        />
+      </div>
+    )
+  },
+}
+
+export const PinningAndResizing: Story = {
+  name: 'Column pinning & resizing',
+  render: () => (
+    <div className="w-[560px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableColumnPinning</code> adds Pin left/right to each column menu (Invoice starts
+        pinned left); <code>enableColumnResizing</code> adds drag handles between columns
+        (double-click a handle to reset). Both apply explicit column widths, so the table can
+        overflow horizontally — scroll sideways and the pinned column stays put.
+      </p>
+      <DataTable
+        columns={[
+          { accessorKey: 'id', header: 'Invoice', size: 140 },
+          { accessorKey: 'status', header: 'Status', size: 200 },
+          { accessorKey: 'amount', header: 'Amount', size: 200 },
+          {
+            id: 'notes',
+            header: 'Notes',
+            size: 320,
+            cell: ({ row }) => `Generated reference note for ${row.original.id}`,
+          },
+        ]}
+        data={ROWS}
+        pageSize={10}
+        enableSorting
+        enableColumnPinning
+        enableColumnResizing
+        defaultColumnPinning={{ left: ['id'] }}
+      />
+    </div>
+  ),
+}
+
+export const ExpandableRows: Story = {
+  name: 'Expandable detail rows',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>renderDetail</code> adds a chevron column; expanding a row reveals a full-width
+        detail panel (TanStack's expanded row model — ag-grid calls this "master/detail").
+      </p>
+      <DataTable
+        columns={columns}
+        data={ROWS.slice(0, 8)}
+        pageSize={10}
+        renderDetail={(row) => (
+          <dl className="grid grid-cols-3 gap-2 text-sm">
+            <div>
+              <dt className="text-muted-foreground">Invoice</dt>
+              <dd className="font-medium">{row.original.id}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="font-medium">{row.original.status}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Amount</dt>
+              <dd className="font-medium">${row.original.amount.toFixed(2)}</dd>
+            </div>
+          </dl>
+        )}
+      />
+    </div>
+  ),
+}
+
+type Account = { name: string; balance: number; children?: Account[] }
+
+const ACCOUNTS: Account[] = [
+  {
+    name: 'Assets',
+    balance: 5200,
+    children: [
+      { name: 'Cash', balance: 1200 },
+      {
+        name: 'Receivables',
+        balance: 4000,
+        children: [
+          { name: 'Trade', balance: 3500 },
+          { name: 'Other', balance: 500 },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Liabilities',
+    balance: 2100,
+    children: [
+      { name: 'Payables', balance: 1400 },
+      { name: 'Accrued', balance: 700 },
+    ],
+  },
+]
+
+export const TreeData: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>getSubRows</code> turns hierarchical data into expandable nested rows with depth
+        indenting (client-side mode only).
+      </p>
+      <DataTable<Account, unknown>
+        columns={[
+          { accessorKey: 'name', header: 'Account' },
+          {
+            accessorKey: 'balance',
+            header: 'Balance',
+            cell: ({ row }) => `$${row.original.balance.toLocaleString()}`,
+          },
+        ]}
+        data={ACCOUNTS}
+        pageSize={25}
+        getSubRows={(account) => account.children}
+        defaultExpanded={true}
+      />
+    </div>
+  ),
+}
+
+export const GroupingAndAggregation: Story = {
+  name: 'Grouping & aggregation',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableGrouping</code> + <code>defaultGrouping</code> group rows by Status (each
+        column's menu gains "Group by this column"). The Amount column declares{' '}
+        <code>aggregationFn: 'sum'</code> with an <code>aggregatedCell</code>, so collapsed groups
+        show per-group totals.
+      </p>
+      <DataTable<Invoice, unknown>
+        columns={[
+          { accessorKey: 'status', header: 'Status' },
+          { accessorKey: 'id', header: 'Invoice', enableGrouping: false },
+          {
+            accessorKey: 'amount',
+            header: 'Amount',
+            enableGrouping: false,
+            aggregationFn: 'sum',
+            cell: ({ row }) => `$${row.original.amount.toFixed(2)}`,
+            aggregatedCell: ({ getValue }) => (
+              <span className="font-medium">${(getValue() as number).toFixed(2)}</span>
+            ),
+          },
+        ]}
+        data={ROWS}
+        pageSize={50}
+        enableSorting
+        enableGrouping
+        defaultGrouping={['status']}
+      />
+    </div>
+  ),
+}
+
+export const FooterTotals: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        Any column with a <code>footer</code> renderer gets a table footer row — here summing the
+        filtered rows' Amount. TanStack-native: the footer receives the live table instance.
+      </p>
+      <DataTable<Invoice, unknown>
+        columns={[
+          { accessorKey: 'id', header: 'Invoice', footer: () => 'Total' },
+          { accessorKey: 'status', header: 'Status' },
+          {
+            accessorKey: 'amount',
+            header: 'Amount',
+            cell: ({ row }) => `$${row.original.amount.toFixed(2)}`,
+            footer: ({ table }) => {
+              const total = table
+                .getFilteredRowModel()
+                .rows.reduce((sum, row) => sum + row.original.amount, 0)
+              return <span className="font-semibold">${total.toFixed(2)}</span>
+            },
+          },
+        ]}
+        data={ROWS}
+        pageSize={10}
+        enableGlobalFilter
+        searchPlaceholder="Filter, and watch the total follow…"
+      />
+    </div>
+  ),
+}
+
+export const CsvExport: Story = {
+  name: 'CSV export',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>enableCsvExport="invoices.csv"</code> adds an Export button to the toolbar. It
+        downloads the current view — visible columns, filtered + sorted rows across all pages
+        (client mode). UTF-8 BOM included so Excel is happy.
+      </p>
+      <DataTable
+        columns={columns}
+        data={ROWS}
+        pageSize={10}
+        enableGlobalFilter
+        enableCsvExport="invoices.csv"
+      />
+    </div>
+  ),
+}
+
+export const RangeFilterStory: Story = {
+  name: 'Number range filter',
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        <code>DataTableRangeFilter</code> filters a numeric column by min/max, using TanStack's
+        built-in <code>filterFn: 'inNumberRange'</code>. Placeholders show the column's actual
+        min/max via faceting.
+      </p>
+      <DataTable<Invoice, unknown>
+        columns={[
+          { accessorKey: 'id', header: 'Invoice' },
+          { accessorKey: 'status', header: 'Status' },
+          {
+            accessorKey: 'amount',
+            header: 'Amount',
+            filterFn: 'inNumberRange',
+            cell: ({ row }) => `$${row.original.amount.toFixed(2)}`,
+          },
+        ]}
+        data={ROWS}
+        pageSize={10}
+        renderToolbar={(table) => (
+          <DataTableRangeFilter column={table.getColumn('amount')} title="Amount" />
+        )}
+      />
+    </div>
+  ),
+}
+
+export const ErrorState: Story = {
+  render: function ErrorStateExample() {
+    const [failed, setFailed] = useState(true)
+    return (
+      <div className="w-[600px]">
+        <p className="text-muted-foreground mb-3 text-sm">
+          <code>error</code> replaces the body with a message and (with <code>onRetry</code>) a
+          Retry button. Retrying here "succeeds" and shows the data.
+        </p>
+        <DataTable
+          columns={columns}
+          data={failed ? [] : ROWS.slice(0, 5)}
+          pageSize={10}
+          error={failed ? 'Couldn’t load invoices. Check your connection and try again.' : undefined}
+          onRetry={() => setFailed(false)}
+        />
+      </div>
+    )
+  },
+}
+
+export const SkeletonLoading: Story = {
+  render: () => (
+    <div className="w-[600px]">
+      <p className="text-muted-foreground mb-3 text-sm">
+        When <code>loading</code> is set and no rows exist yet, the body renders{' '}
+        <code>loadingRows</code> skeleton rows (default 5) instead of dimming an empty table.
+      </p>
+      <DataTable columns={columns} data={[]} pageIndex={0} pageCount={3} loading loadingRows={6} />
     </div>
   ),
 }

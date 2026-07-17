@@ -1,8 +1,10 @@
 # DataTable
 
-TanStack Table-powered data grid with built-in pagination, sorting, filtering, column visibility, and row selection. Two pagination modes: client-side (default) and server-side (presence of `pageCount` flips the mode) — in server-side mode, sorting and filtering are also manual: the table never sorts/filters locally, it only fires the `on*Change` callbacks.
+TanStack Table-powered data grid with built-in pagination, sorting, filtering, column visibility, row selection, column pinning/resizing, expandable detail rows, tree data, grouping with aggregation, footer rows, CSV export, and error/skeleton states. Two pagination modes: client-side (default) and server-side (presence of `pageCount` flips the mode) — in server-side mode, sorting and filtering are also manual: the table never sorts/filters locally, it only fires the `on*Change` callbacks. Grouping, tree data, and faceted counts are client-side-only.
 
-Also exports the building blocks it's made from — `DataTableColumnHeader`, `DataTableToolbar`, `DataTableFacetedFilter`, `DataTableViewOptions`, `DataTablePagination`, and `dataTableFacetedFilterFn` — so you can compose a fully custom table instead of using `<DataTable>` directly.
+Also exports the building blocks it's made from — `DataTableColumnHeader`, `DataTableToolbar`, `DataTableFacetedFilter`, `DataTableRangeFilter`, `DataTableViewOptions`, `DataTablePagination`, `DataTableExportButton`, `dataTableFacetedFilterFn`, and the CSV/TSV helpers (`tableToCsv`, `selectionToTsv`, `copySelectionAsTsv`, `exportTableToCsv`) — so you can compose a fully custom table instead of using `<DataTable>` directly.
+
+For 100k+ rows, use the virtualized sibling [DataGrid](./data-grid.md).
 
 ## Import
 
@@ -12,8 +14,10 @@ import {
   DataTableColumnHeader,
   DataTableToolbar,
   DataTableFacetedFilter,
+  DataTableRangeFilter,
   DataTableViewOptions,
   DataTablePagination,
+  DataTableExportButton,
   dataTableFacetedFilterFn,
 } from '@quietbuildlab/ui'
 import type { ColumnDef } from '@tanstack/react-table'  // transitive dep
@@ -30,12 +34,16 @@ interface DataTableProps<TData, TValue> {
   pageIndex?: number                     // controlled page index (server-side mode)
   pageCount?: number                     // total pages — presence flips to server-side mode
   onPaginationChange?: (state: PaginationState) => void
-  loading?: boolean                      // dims table and disables controls
+  loading?: boolean                      // dims table (or shows skeleton rows when empty)
+  loadingRows?: number                   // skeleton row count when loading && empty (default 5)
+  error?: React.ReactNode                // replaces the body with an error message
+  onRetry?: () => void                   // adds a Retry button to the error state
   emptyMessage?: React.ReactNode         // default "No results."
   className?: string
 
   enableSorting?: boolean                // default false
   sorting?: SortingState
+  defaultSorting?: SortingState          // uncontrolled initial sort
   onSortingChange?: (state: SortingState) => void
 
   enableGlobalFilter?: boolean           // default false — shows the built-in search box
@@ -44,10 +52,12 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string             // default "Search…"
 
   columnFilters?: ColumnFiltersState
+  defaultColumnFilters?: ColumnFiltersState
   onColumnFiltersChange?: (state: ColumnFiltersState) => void
 
   enableViewOptions?: boolean            // default false — shows the "View" column-visibility dropdown
   columnVisibility?: VisibilityState
+  defaultColumnVisibility?: VisibilityState
   onColumnVisibilityChange?: (state: VisibilityState) => void
 
   enableRowSelection?: boolean | ((row: Row<TData>) => boolean)  // default false
@@ -55,13 +65,36 @@ interface DataTableProps<TData, TValue> {
   onRowSelectionChange?: (state: RowSelectionState) => void
   getRowId?: (row: TData, index: number) => string  // recommended with selection + server mode
 
-  renderToolbar?: (table: Table<TData>) => React.ReactNode  // replaces the default toolbar
+  onRowClick?: (row: Row<TData>) => void // pointer cursor + Enter activation; ignores inner controls
 
+  enableColumnResizing?: boolean         // default false — drag handles; applies explicit widths
+  enableColumnPinning?: boolean          // default false — Pin left/right in the column menu
+  columnPinning?: ColumnPinningState
+  defaultColumnPinning?: ColumnPinningState  // e.g. { left: ['name'] }
+  onColumnPinningChange?: (state: ColumnPinningState) => void
+
+  renderDetail?: (row: Row<TData>) => React.ReactNode  // expandable detail panel (chevron column)
+  getSubRows?: (row: TData) => TData[] | undefined     // tree data (client-side only)
+  expanded?: ExpandedState
+  defaultExpanded?: ExpandedState        // `true` expands everything
+  onExpandedChange?: (state: ExpandedState) => void
+
+  enableGrouping?: boolean               // default false — "Group by" in column menus (client-side only)
+  grouping?: GroupingState
+  defaultGrouping?: GroupingState        // e.g. ['status']
+  onGroupingChange?: (state: GroupingState) => void
+
+  enableCsvExport?: boolean | string     // default false — Export button; string sets the filename
+
+  renderToolbar?: (table: Table<TData>) => React.ReactNode  // replaces the default toolbar
   stickyHeader?: boolean                 // default false
+  meta?: TableMeta<TData>                // passed to table.options.meta (e.g. updateData for editable cells)
 }
 ```
 
-All new props are optional and off by default — existing `<DataTable columns={columns} data={data} />` usages are unaffected.
+All feature props are optional and off by default — existing `<DataTable columns={columns} data={data} />` usages are unaffected.
+
+**Stable references:** memoize `columns` and `data` (module constants, `useMemo`, or state) rather than building fresh arrays inline on every render — unstable references make TanStack re-derive column instances each render, which costs performance and resets column sizing state.
 
 ## Usage — client-side (default)
 
@@ -188,16 +221,132 @@ When composing your own toolbar via `renderToolbar`, `DataTableToolbar` always r
 
 Adds a checkbox column (header checkbox selects/deselects every row on the current page, with an indeterminate state) and a selection summary in the pagination footer: "X of Y row(s) selected." in client-side mode, or "X row(s) selected." in server-side mode (the row model there only sees the current page, so the "of Y" denominator would silently undercount selections made on other pages — `getRowId` still makes the underlying selection correct across pages). `enableRowSelection` also accepts a per-row predicate: `(row) => row.original.status !== 'archived'`.
 
+## Usage — row click
+
+```tsx
+<DataTable columns={columns} data={allUsers} onRowClick={(row) => navigate(`/users/${row.original.id}`)} />
+```
+
+Rows get a pointer cursor, become focusable, and activate on Enter. Clicks on interactive elements inside a row (buttons, links, checkboxes, selects) are ignored, so `onRowClick` composes cleanly with row selection and inline actions.
+
+## Usage — column pinning & resizing
+
+```tsx
+<DataTable
+  columns={columns}
+  data={allUsers}
+  enableSorting
+  enableColumnPinning
+  enableColumnResizing
+  defaultColumnPinning={{ left: ['name'] }}
+/>
+```
+
+`enableColumnPinning` adds Pin left / Pin right / Unpin to each column's header menu (the menu comes from `DataTableColumnHeader`, so pair it with `enableSorting` or manual headers); pinned columns stay sticky under horizontal scroll with a boundary border. `enableColumnResizing` adds drag handles on header edges (double-click resets). Either flag switches the table to explicit column widths from `ColumnDef.size` (TanStack default 150) — without them, columns keep natural auto-layout widths and `size` is ignored.
+
+## Usage — expandable detail rows
+
+```tsx
+<DataTable
+  columns={columns}
+  data={orders}
+  renderDetail={(row) => <OrderLineItems order={row.original} />}
+/>
+```
+
+Adds a chevron column; expanding reveals a full-width detail panel under the row. Control externally via `expanded` / `defaultExpanded` / `onExpandedChange`.
+
+## Usage — tree data
+
+```tsx
+type Account = { name: string; children?: Account[] }
+
+<DataTable columns={columns} data={accounts} getSubRows={(a) => a.children} defaultExpanded={true} />
+```
+
+Hierarchies render as nested rows with depth indenting on the chevron column. Client-side mode only. `renderDetail` and `getSubRows` are mutually exclusive.
+
+## Usage — grouping & aggregation
+
+```tsx
+const columns: ColumnDef<Invoice>[] = [
+  { accessorKey: 'status', header: 'Status' },
+  { accessorKey: 'id', header: 'Invoice', enableGrouping: false },
+  {
+    accessorKey: 'amount',
+    header: 'Amount',
+    enableGrouping: false,
+    aggregationFn: 'sum',                                   // TanStack built-in
+    aggregatedCell: ({ getValue }) => `$${getValue<number>().toFixed(2)}`,
+  },
+]
+
+<DataTable columns={columns} data={invoices} enableGrouping defaultGrouping={['status']} />
+```
+
+Group rows render a toggle with the group value and row count; other cells show `aggregatedCell` (fed by `aggregationFn` — `sum`, `min`, `max`, `mean`, `count`, etc.). Every groupable column's menu gains "Group by this column". Client-side mode only.
+
+## Usage — footer totals
+
+```tsx
+{
+  accessorKey: 'amount',
+  header: 'Amount',
+  footer: ({ table }) => {
+    const total = table.getFilteredRowModel().rows.reduce((sum, r) => sum + r.original.amount, 0)
+    return `$${total.toFixed(2)}`
+  },
+}
+```
+
+Any column with a `footer` renderer produces a `<tfoot>` row (TanStack-native `getFooterGroups`). The renderer receives the live table, so totals can follow the active filter.
+
+## Usage — CSV export & clipboard
+
+```tsx
+<DataTable columns={columns} data={allUsers} enableCsvExport="users.csv" />
+```
+
+The Export button downloads the current view: visible (non-utility) columns, filtered + sorted rows across all pages in client mode (current page only in server mode), UTF-8 BOM for Excel. For custom toolbars use `<DataTableExportButton table={table} filename="…" />`, or the helpers directly: `tableToCsv(table)`, `exportTableToCsv(table, filename)`, `selectionToTsv(table)`, and `copySelectionAsTsv(table)` (clipboard, pasteable into spreadsheets).
+
+## Usage — number range filter
+
+```tsx
+const columns = [{ accessorKey: 'amount', header: 'Amount', filterFn: 'inNumberRange' }]
+
+renderToolbar={(table) => (
+  <DataTableRangeFilter column={table.getColumn('amount')} title="Amount" />
+)}
+```
+
+Min/max inputs backed by TanStack's built-in `inNumberRange`; placeholders show the column's actual min/max via `getFacetedMinMaxValues()` (client-side mode).
+
+## Usage — error & loading states
+
+```tsx
+<DataTable columns={columns} data={rows} error={fetchError && 'Couldn't load. Try again.'} onRetry={refetch} />
+<DataTable columns={columns} data={[]} loading loadingRows={6} />  {/* skeleton rows */}
+```
+
+`error` replaces the body (takes precedence over rows and loading); `onRetry` adds a Retry button. While `loading` with no rows, the body shows `loadingRows` skeleton rows; with rows present, the existing dim-and-disable behavior applies.
+
+## Usage — editable cells
+
+Pass `meta={{ updateData }}` and commit from custom cell renderers via `table.options.meta.updateData(rowIndex, columnId, value)` — TanStack's documented pattern. See the **Recipes → Editable DataTable** story for a complete click-to-edit implementation.
+
 ## Composing a fully custom table
 
 `DataTable` is built from exported pieces you can use directly:
 
-- **`DataTableColumnHeader`** — `{ column, title, className? }`. Sortable header cell; renders plain text if `!column.getCanSort()`.
-- **`DataTableToolbar`** — `{ table, searchPlaceholder?, children?, className?, showViewOptions? }`. Search box (when `table.options.enableGlobalFilter`) + Reset + `children` + `DataTableViewOptions` (omit with `showViewOptions={false}`).
+- **`DataTableColumnHeader`** — `{ column, title, className? }`. Sortable header cell with a menu (sort / group / pin / hide, each item appearing only when that feature is enabled); renders plain text if `!column.getCanSort()`.
+- **`DataTableToolbar`** — `{ table, searchPlaceholder?, children?, className?, showViewOptions?, csvExport? }`. Search box (when `table.options.enableGlobalFilter`) + Reset + `children` + export/view options on the trailing edge.
 - **`DataTableFacetedFilter`** — `{ column?, title, options: { label, value, icon? }[] }`. Popover checkbox list with facet counts; pair the column with `filterFn: dataTableFacetedFilterFn`.
+- **`DataTableRangeFilter`** — `{ column?, title, step? }`. Min/max number filter; pair with `filterFn: 'inNumberRange'`.
 - **`DataTableViewOptions`** — `{ table }`. Column-visibility dropdown; renders `null` if no column can be hidden.
 - **`DataTablePagination`** — `{ table, pageSizeOptions?, loading? }`. Rows-per-page selector, selection summary, page status, Prev/Next.
+- **`DataTableExportButton`** — `{ table, filename? }`. CSV download of the current view.
 - **`dataTableFacetedFilterFn(row, columnId, filterValue)`** — filter function matching when the cell's stringified value is one of the selected values.
+- **CSV/TSV helpers** — `tableToCsv`, `exportTableToCsv`, `selectionToTsv`, `copySelectionAsTsv`, plus the pure `serializeCsv` / `serializeTsv`.
 
 Use these with your own `useReactTable()` call (not `<DataTable>`) when you need full control over the table's layout.
 
@@ -210,6 +359,7 @@ Use these with your own `useReactTable()` call (not `<DataTable>`) when you need
 
 ## Related
 
+- [DataGrid](./data-grid.md) — virtualized sibling for 100k+ rows (no pagination, infinite scroll)
 - [Table](./table.md), [Pagination](./pagination.md), [Skeleton](./skeleton.md)
 
 ## Source

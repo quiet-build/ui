@@ -74,10 +74,10 @@ Every theme ships light + dark. Toggle a `dark` class on `<html>`:
 document.documentElement.classList.toggle("dark", isDark)
 ```
 
-## Components (31)
+## Components (32)
 
 Accordion, Alert, AlertDialog, Avatar, Badge, Button, Calendar, Card, Checkbox,
-DataTable, DatePicker, Dialog, DropdownMenu, FilePicker, Input, Label,
+DataGrid, DataTable, DatePicker, Dialog, DropdownMenu, FilePicker, Input, Label,
 Pagination, Popover, Progress, RadioGroup, Select, Separator, Sheet, Skeleton,
 Slider, Switch, Table, Tabs, Textarea, Toaster, Tooltip.
 
